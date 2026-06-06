@@ -1,0 +1,99 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 md:mb-8">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">Notifications</h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">All updates, alerts, and system messages</p>
+        </div>
+        <button id="mark-all-read-page" class="flex-shrink-0 self-start sm:self-center px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-xl transition-colors">
+            Mark all as read
+        </button>
+    </div>
+
+    <!-- Notification List -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        {% if notifications %}
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for n in notifications %}
+                <div class="p-4 md:p-6 transition-colors {% if not n.is_read %}bg-blue-50/50 dark:bg-blue-900/10{% else %}hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}">
+                    <div class="flex items-start gap-3 md:gap-4">
+                        <!-- Icon -->
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0 
+                            {% if n.notification_type == 'admin' %}bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400
+                            {% elif n.notification_type == 'organizer' %}bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400
+                            {% else %}bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400{% endif %}">
+                            <span class="material-symbols-outlined text-xl md:text-2xl">
+                                {% if n.notification_type == 'admin' %}admin_panel_settings{% elif n.notification_type == 'organizer' %}campaign{% else %}person{% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-3">
+                                <a href="{% url 'notification_detail' n.id %}" class="block group flex-1 min-w-0">
+                                    <h3 class="text-sm md:text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors leading-snug">{{ n.title }}</h3>
+                                    <p class="mt-1 text-xs md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ n.message }}</p>
+                                </a>
+                                {% if not n.is_read %}
+                                <div class="w-2.5 h-2.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mt-2 md:mt-3 text-xs font-semibold text-slate-400">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">schedule</span>
+                                    {{ n.created_at|date:"M d, Y H:i" }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase
+                                    {% if n.notification_type == 'admin' %}bg-purple-50 text-purple-500
+                                    {% elif n.notification_type == 'organizer' %}bg-orange-50 text-orange-500
+                                    {% else %}bg-blue-50 text-blue-500{% endif %}">
+                                    {{ n.get_notification_type_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-10 md:p-12 text-center flex flex-col items-center">
+                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-3xl md:text-4xl text-slate-400">notifications_off</span>
+                </div>
+                <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-2">No Notifications Yet</h3>
+                <p class="text-slate-500 dark:text-slate-400 max-w-sm mx-auto text-sm">You're all caught up! When there are updates about your account or exhibitions, they will appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const markAllBtnPage = document.getElementById('mark-all-read-page');
+        if (markAllBtnPage) {
+            markAllBtnPage.addEventListener('click', async () => {
+                try {
+                    const res = await fetch("{% url 'mark_all_notifications_read' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    if (res.ok) { window.location.reload(); }
+                } catch (e) {
+                    console.error('Error marking all as read:', e);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

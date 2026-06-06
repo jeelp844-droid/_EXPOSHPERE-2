@@ -1,0 +1,104 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-4 md:py-8">
+    <!-- Header Section -->
+    <div class="mb-8 md:mb-12 text-center" data-aos="fade-down" data-aos-duration="600">
+        <div class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-primary/10 text-primary mb-5 md:mb-6 shadow-xl shadow-primary/5 ring-1 ring-primary/20">
+            <span class="material-symbols-outlined text-3xl md:text-4xl">campaign</span>
+        </div>
+        <h1 class="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-3 md:mb-4">Become an Organizer</h1>
+        <p class="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed px-4">Join our community of professional exhibition organizers. Please review our platform guidelines and terms before submitting your request.</p>
+    </div>
+
+    <!-- Terms Card -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden mb-6 md:mb-8" data-aos="fade-up" data-aos-duration="800">
+        <div class="p-5 sm:p-8 md:p-12">
+            <div class="prose prose-slate dark:prose-invert max-w-none">
+                <div class="flex items-center gap-3 mb-6 md:mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <span class="material-symbols-outlined text-primary">gavel</span>
+                    <h2 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white m-0">Organizer Terms &amp; Conditions</h2>
+                </div>
+
+                <div class="space-y-6 md:space-y-8">
+                    <section class="group">
+                        <div class="flex gap-3 md:gap-4">
+                            <div class="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">01</div>
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-2">Event Integrity &amp; Quality</h3>
+                                <p class="text-slate-500 text-sm md:text-base m-0">Organizers are responsible for maintaining the highest standards of exhibition quality. All listed events must be legitimate, properly described, and legally permitted at the specified venue.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="group">
+                        <div class="flex gap-3 md:gap-4">
+                            <div class="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">02</div>
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-2">Booking &amp; Stall Management</h3>
+                                <p class="text-slate-500 text-sm md:text-base m-0">Upon approval, you agree to manage all bookings (Tickets &amp; Stalls) fairly and transparently. You must honor all valid bookings and provide timely support to your participants.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="group">
+                        <div class="flex gap-3 md:gap-4">
+                            <div class="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">03</div>
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-2">Financial Responsibility</h3>
+                                <p class="text-slate-500 text-sm md:text-base m-0">Organizers are solely responsible for the financial aspects of their exhibitions, including venue costs, logistics, and any applicable local taxes or fees required by law.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="group">
+                        <div class="flex gap-3 md:gap-4">
+                            <div class="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all">04</div>
+                            <div>
+                                <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-2">Platform Protocol</h3>
+                                <p class="text-slate-500 text-sm md:text-base m-0">Fraudulent activity, spamming, or harassment of users will lead to immediate account termination and potential legal action. We maintain a zero-tolerance policy for misleading listings.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Submission Form -->
+            <form method="POST" class="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-100 dark:border-slate-800">
+                {% csrf_token %}
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 md:p-6 mb-6 md:mb-8 border border-slate-100 dark:border-slate-700/50">
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" name="terms_accepted" id="terms-checkbox" required
+                               class="mt-1 w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary transition-all cursor-pointer flex-shrink-0">
+                        <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                            I have read accurately and agree to abide by the Organizer Terms &amp; Conditions and Platform Guidelines listed above.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <a href="{% url 'user_dashboard' %}" class="px-6 py-3 text-sm font-bold text-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</a>
+                    <button type="submit" id="submit-btn" disabled
+                            class="px-8 md:px-10 py-3 md:py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 transition-all shadow-xl shadow-slate-200 dark:shadow-none flex items-center justify-center gap-2">
+                        Submit Organizer Request
+                        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <p class="text-center text-xs text-slate-400 font-medium">Your request will be reviewed by our administration within 24-48 hours.</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('terms-checkbox');
+        const submitBtn = document.getElementById('submit-btn');
+        checkbox.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+        });
+    });
+</script>
+{% endblock %}

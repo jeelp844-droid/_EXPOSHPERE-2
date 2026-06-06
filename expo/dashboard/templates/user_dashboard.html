@@ -1,0 +1,270 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+
+<!-- Header Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+    <!-- My Bookings -->
+    <div class="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
+                <span class="material-symbols-outlined">local_activity</span>
+            </div>
+        </div>
+        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">My Bookings</p>
+        <h3 class="text-3xl font-black text-slate-900 dark:text-white mt-1">{{ my_bookings_count }}</h3>
+    </div>
+
+    <!-- Explore -->
+    <div class="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                <span class="material-symbols-outlined">explore</span>
+            </div>
+        </div>
+        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Explore More</p>
+        <a href="{% url 'exhibition' %}" class="text-sm font-bold text-primary hover:underline mt-2 inline-block">Browse all events</a>
+    </div>
+
+    <!-- Profile Shortcut -->
+    <div class="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm sm:col-span-2 lg:col-span-1">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600">
+                <span class="material-symbols-outlined">account_circle</span>
+            </div>
+        </div>
+        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Profile</p>
+        <p class="text-xs text-slate-500 mt-2">Manage your account and preferences.</p>
+    </div>
+</div>
+
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+    <!-- Recent Bookings -->
+    <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden h-full">
+            <div class="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base md:text-lg font-bold">Recent Bookings</h3>
+                <a href="{% url 'my_bookings' %}" class="text-sm font-bold text-primary hover:underline">View All</a>
+            </div>
+
+            <!-- Desktop Table (hidden on mobile) -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800/50">
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Exhibition</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Date booked</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Type</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Booking Status</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Payment</th>
+                            <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        {% for booking in recent_bookings %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined text-sm">event</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-900 dark:text-white">{{ booking.exhibition.title }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm text-slate-600 dark:text-slate-400">{{ booking.created_at|date:"M d, Y" }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                    {{ booking.booking_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-bold rounded-lg {% if booking.status == 'confirmed' %}bg-green-100 text-green-600{% elif booking.status == 'pending' %}bg-orange-100 text-orange-600{% else %}bg-red-100 text-red-600{% endif %}">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-bold rounded-lg {% if booking.payment_status == 'completed' %}bg-green-100 text-green-600{% elif booking.payment_status == 'pending' %}bg-orange-100 text-orange-600{% else %}bg-red-100 text-red-600{% endif %}">
+                                    {{ booking.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'download_pass' booking.id %}" class="text-slate-400 hover:text-primary transition-colors" title="Download Pass">
+                                    <span class="material-symbols-outlined">download</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400 italic">No recent bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card List (visible on mobile only) -->
+            <div class="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+                {% for booking in recent_bookings %}
+                <div class="p-4 flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                            <span class="material-symbols-outlined text-sm">event</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ booking.exhibition.title }}</p>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ booking.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        <a href="{% url 'download_pass' booking.id %}" class="text-slate-400 hover:text-primary transition-colors flex-shrink-0" title="Download Pass">
+                            <span class="material-symbols-outlined">download</span>
+                        </a>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                            {{ booking.booking_type }}
+                        </span>
+                        <span class="px-2 py-1 text-[10px] font-bold rounded-lg {% if booking.status == 'confirmed' %}bg-green-100 text-green-600{% elif booking.status == 'pending' %}bg-orange-100 text-orange-600{% else %}bg-red-100 text-red-600{% endif %}">
+                            {{ booking.get_status_display }}
+                        </span>
+                        <span class="px-2 py-1 text-[10px] font-bold rounded-lg {% if booking.payment_status == 'completed' %}bg-green-100 text-green-600{% elif booking.payment_status == 'pending' %}bg-orange-100 text-orange-600{% else %}bg-red-100 text-red-600{% endif %}">
+                            {{ booking.get_payment_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="px-4 py-10 text-center text-slate-400 italic text-sm">No recent bookings found.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Chart + Notifications -->
+    <div class="space-y-6 md:space-y-8">
+        <!-- Booking Distribution Chart -->
+        <div class="bg-white dark:bg-slate-900 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-base md:text-lg font-bold">Booking Types</h3>
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
+                    <span class="material-symbols-outlined text-sm">donut_small</span>
+                </div>
+            </div>
+            <div class="relative h-44 md:h-48 w-full">
+                <canvas id="userBookingChart"></canvas>
+            </div>
+            <div class="mt-4 flex justify-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2.5 h-2.5 rounded-full bg-[#0b50da]"></div>
+                    Stalls
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></div>
+                    Tickets
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notifications -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base md:text-lg font-bold">Recent Notifications</h3>
+                <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-md">Live</span>
+            </div>
+            <div class="p-4 md:p-6 space-y-5 flex-1">
+                {% for notif in recent_notifications %}
+                <a href="{% url 'notification_detail' notif.id %}" class="group flex gap-3 md:gap-4 cursor-pointer">
+                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center shrink-0 
+                        {% if notif.notification_type == 'admin' %}bg-red-50 text-red-600
+                        {% elif notif.notification_type == 'organizer' %}bg-blue-50 text-blue-600
+                        {% else %}bg-green-50 text-green-600{% endif %}">
+                        <span class="material-symbols-outlined text-xl">
+                            {% if notif.notification_type == 'admin' %}admin_panel_settings
+                            {% elif notif.notification_type == 'organizer' %}business_center
+                            {% else %}person{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-black uppercase tracking-widest {% if notif.is_read %}text-slate-400{% else %}text-primary{% endif %}">
+                                {% if notif.is_read %}Read{% else %}New{% endif %}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase">{{ notif.created_at|timesince }} ago</span>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors leading-tight truncate">{{ notif.title }}</h4>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-1 italic">{{ notif.message }}</p>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-sm text-slate-400 italic text-center py-10">No recent notifications found.</p>
+                {% endfor %}
+            </div>
+            <div class="p-4 md:p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                <a href="{% url 'list_notifications' %}" class="w-full block py-3 text-center text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    View All Notifications
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Enquiries -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base md:text-lg font-bold">My Enquiries</h3>
+                <span class="px-2 py-0.5 bg-orange-50 text-orange-600 text-[10px] font-black uppercase tracking-widest rounded-md">{{ my_enquiries_count }}</span>
+            </div>
+            <div class="p-4 md:p-6 space-y-5 flex-1">
+                {% for enquiry in recent_enquiries %}
+                <div class="group flex gap-3 md:gap-4">
+                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-xl">contact_support</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[10px] font-black uppercase tracking-widest {% if enquiry.is_replied %}text-green-600{% else %}text-orange-500{% endif %}">
+                                {% if enquiry.is_replied %}Replied{% else %}Pending{% endif %}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase">{{ enquiry.created_at|timesince }} ago</span>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">{{ enquiry.subject }}</h4>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-1 truncate">{{ enquiry.exhibition.title }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-400 italic text-center py-10">No recent enquiries found.</p>
+                {% endfor %}
+            </div>
+            <div class="p-4 md:p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                <a href="{% url 'user_enquiries' %}" class="w-full block py-3 text-center text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary transition-colors">
+                    View All Enquiries
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    const userCtx = document.getElementById('userBookingChart').getContext('2d');
+    new Chart(userCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                data: {{ chart_data|safe }},
+                backgroundColor: ['#0b50da', '#3b82f6'],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

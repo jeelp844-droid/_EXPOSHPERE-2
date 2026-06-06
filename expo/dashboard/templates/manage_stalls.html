@@ -1,0 +1,528 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --available-clr: #2563eb;
+        --available-bg: #eff6ff;
+        --booked-clr: #64748b;
+        --booked-bg: #f1f5f9;
+        --blocked-clr: #dc2626;
+        --blocked-bg: #fef2f2;
+        --selected-clr: #f97316;
+        --accent: #2563eb;
+        --text-dark: #0f172a;
+        --border-color: #e2e8f0;
+        --premium-gold: #f59e0b;
+        --premium-bg: #fffbeb;
+    }
+
+    .floor-plan-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        border: 1px solid var(--border-color);
+    }
+
+    .floor-plan-header h2 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+    .legend-box-top { display: flex; gap: 20px; }
+    .legend-li { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #64748b; }
+    .l-box { width: 12px; height: 12px; border-radius: 3px; }
+
+    .arch-grid-container {
+        border: 2px dashed #e2e8f0;
+        border-radius: 20px;
+        padding: 50px 30px;
+        position: relative;
+        background: #fafafa;
+    }
+
+    .architectural-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 16px;
+    }
+
+    .st-unit {
+        height: 90px;
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-weight: 800;
+        font-size: 15px;
+        border: 2px solid transparent;
+        position: relative;
+        background: white;
+    }
+
+    .st-unit.available { background: var(--available-bg); color: var(--available-clr); border-color: rgba(37, 99, 235, 0.1); }
+    .st-unit.booked { background: var(--booked-bg); color: var(--booked-clr); border-color: transparent; opacity: 0.8; }
+    .st-unit.maintenance { background: var(--blocked-bg); color: var(--blocked-clr); border-color: rgba(220, 38, 38, 0.1); }
+
+    .st-unit.premium { grid-column: span 2; background: var(--premium-bg); border-color: rgba(245, 158, 11, 0.2); }
+    .st-unit.premium span:first-child { color: var(--premium-gold); }
+
+    .st-unit.selected {
+        background: var(--selected-clr) !important;
+        border-color: var(--selected-clr) !important;
+        color: white !important;
+        transform: translateY(-6px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(249, 115, 22, 0.3);
+        z-index: 20;
+    }
+
+    .st-unit.selected .price-sub { color: white !important; opacity: 0.9; }
+
+    .price-sub { font-size: 11px; font-weight: 600; margin-top: 4px; opacity: 0.7; }
+
+    .preview-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        position: sticky;
+        top: 20px;
+    }
+
+    .preview-content { padding: 32px; }
+    .preview-content h3 { font-size: 24px; font-weight: 900; margin-bottom: 24px; color: #0f172a; letter-spacing: -0.02em; }
+
+    .form-group label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-group input, .form-group select { 
+        width: 100%; 
+        padding: 12px 16px; 
+        border: 1px solid #e2e8f0; 
+        border-radius: 12px; 
+        font-size: 14px; 
+        font-weight: 600;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; background: white; }
+
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s;
+        box-shadow: 0 8px 20px rgba(11, 80, 218, 0.2);
+    }
+
+    .btn-save:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(11, 80, 218, 0.3); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status-badge-input {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .status-opt {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        border: 2px solid #f1f5f9;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #94a3b8;
+    }
+
+    .status-opt.active[data-val="available"] { border-color: var(--available-clr); background: var(--available-bg); color: var(--available-clr); }
+    .status-opt.active[data-val="booked"] { border-color: var(--booked-clr); background: var(--booked-bg); color: var(--booked-clr); }
+    .status-opt.active[data-val="maintenance"] { border-color: var(--blocked-clr); background: var(--blocked-bg); color: var(--blocked-clr); }
+
+    .booking-info {
+        background: #f0f9ff;
+        border: 1px solid #e0f2fe;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 24px;
+        animation: slideIn 0.3s ease-out;
+    }
+    .booking-info h4 { margin: 0 0 12px 0; font-size: 11px; font-weight: 900; color: #0369a1; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .complete-banner {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        padding: 16px 24px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+        animation: slideIn 0.5s ease-out;
+    }
+    .complete-banner .material-symbols-outlined { color: #dc2626; font-size: 28px; }
+    .complete-banner .text { flex-grow: 1; }
+    .complete-banner h5 { margin: 0; font-size: 15px; font-weight: 800; color: #991b1b; }
+    .complete-banner p { margin: 4px 0 0 0; font-size: 13px; color: #b91c1c; font-weight: 500; }
+</style>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <!-- Left Column: Floor Plan -->
+    <div class="lg:col-span-2 order-2 lg:order-1">
+        {% if is_complete %}
+        <div class="complete-banner">
+            <span class="material-symbols-outlined">event_busy</span>
+            <div class="text">
+                <h5>Exhibition Completed</h5>
+                <p>This exhibition ended on {{ exhibition.end_date }}. Stall configurations are now in read-only mode.</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="floor-plan-card">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div>
+                    <h2 class="text-slate-900 leading-none text-xl sm:text-2xl">Hall A Stall Management</h2>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-2">Manage availability and pricing for {{ exhibition.title }}</p>
+                </div>
+                <div class="legend-box-top flex-wrap justify-start">
+                    <div class="legend-li"><div class="l-box" style="background: var(--available-clr);"></div> Available</div>
+                    <div class="legend-li"><div class="l-box" style="background: var(--booked-clr);"></div> Booked</div>
+                    <div class="legend-li"><div class="l-box" style="background: var(--blocked-clr);"></div> Maintenance</div>
+                </div>
+            </div>
+
+            <!-- Mobile Tip -->
+            <div class="md:hidden flex items-center gap-2 mb-4 p-3 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-xl border border-amber-100 uppercase tracking-widest">
+                <span class="material-symbols-outlined text-sm">swipe</span>
+                Swipe to view full floor plan
+            </div>
+
+            <div class="arch-grid-container overflow-x-auto custom-scrollbar-h">
+                <div class="architectural-grid min-w-[500px]" id="mainGrid">
+                    {% for stall in stalls %}
+                        <div class="st-unit {{ stall.status }} {% if stall.stall_type == 'large' %}premium{% endif %}"
+                             id="unit-{{ stall.id }}"
+                             onclick="selectStall('{{ stall.id }}')"
+                             data-num="{{ stall.stall_number }}"
+                             data-price="{{ stall.price }}"
+                             data-dim="{{ stall.dimensions }}"
+                             data-pos="{{ stall.position }}"
+                             data-type="{{ stall.stall_type }}"
+                             data-status="{{ stall.status }}">
+                             <span>{{ stall.stall_number }}</span>
+                             <span class="price-sub">₹{{ stall.price|floatformat:0 }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2">
+                    <span class="text-[10px] font-black uppercase text-blue-500 tracking-tighter">Available</span>
+                    <span class="text-xl sm:text-2xl font-black text-blue-900" id="available-count">{{ available_stalls }}</span>
+                </div>
+                <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 text-slate-500">
+                    <span class="text-[10px] font-black uppercase tracking-tighter">Booked</span>
+                    <span class="text-xl sm:text-2xl font-black text-slate-900" id="booked-count">{{ booked_stalls }}</span>
+                </div>
+                <div class="p-4 bg-red-50/50 rounded-2xl border border-red-100 flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2">
+                    <span class="text-[10px] font-black uppercase text-red-500 tracking-tighter">Maintenance</span>
+                    <span class="text-xl sm:text-2xl font-black text-red-900" id="blocked-count">{{ maintenance_stalls }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Control Panel -->
+    <div class="order-1 lg:order-2">
+        <div class="preview-card">
+            <div class="preview-content">
+                {% if is_complete %}
+                <div class="mb-10 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col items-center text-center gap-3">
+                    <span class="material-symbols-outlined text-slate-300 text-4xl">lock</span>
+                    <h4 class="text-slate-900 font-bold">Management Locked</h4>
+                    <p class="text-xs text-slate-500 font-medium">Configurations cannot be modified for completed exhibitions.</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-10 pb-8 border-b border-slate-100 dark:border-slate-800" {% if is_complete %}style="filter: grayscale(1); pointer-events: none; opacity: 0.6;"{% endif %}>
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="material-symbols-outlined text-primary text-xl">payments</span>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Global Pricing</h4>
+                    </div>
+                    
+                    <form id="globalPricingForm" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_global_pricing">
+                        <div class="form-group">
+                            <label>Base Stall Price (₹)</label>
+                            <div class="flex gap-2">
+                                <input type="number" name="base_price" id="basePriceInput" value="{{ exhibition.stall_price|floatformat:0 }}" class="flex-1">
+                                <button type="submit" class="w-12 h-11 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg hover:shadow-primary/20 transition-all">
+                                    <span class="material-symbols-outlined">save</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 px-1">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="apply_to_all" id="applyToAllCheck" value="true" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                            </label>
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Apply to all existing stalls</span>
+                        </div>
+                    </form>
+                </div>
+
+                <h3 id="panelTitle">Select Stall</h3>
+                
+                <div id="stallFormContainer" {% if is_complete %}style="filter: grayscale(1); pointer-events: none; opacity: 0.8;"{% endif %}>
+                <form id="stallForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_stall">
+                    <input type="hidden" name="stall_id" id="formStallId">
+                    <input type="hidden" name="status" id="formStatus">
+                    
+                    <div class="form-group mb-6">
+                        <label>Current Status</label>
+                        <div class="status-badge-input">
+                            <div class="status-opt" data-val="available" onclick="setStatus('available')">Available</div>
+                            <div class="status-opt" data-val="booked" onclick="setStatus('booked')">Booked</div>
+                            <div class="status-opt" data-val="maintenance" onclick="setStatus('maintenance')">Maintenance</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-6">
+                        <label>Price (₹)</label>
+                        <input type="number" name="price" id="formPrice" required placeholder="0.00">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="form-group">
+                            <label>Stall Type</label>
+                            <select name="stall_type" id="formType">
+                                <option value="small">Small</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Dimensions</label>
+                            <input type="text" name="dimensions" id="formDim" placeholder="3m x 3m">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-8">
+                        <label>Internal Position Label</label>
+                        <input type="text" name="position" id="formPos" placeholder="Row A, Stand 1">
+                    </div>
+
+                    <button type="submit" class="btn-save" id="btnSave" disabled>
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        Apply Configuration
+                    </button>
+                </form>
+                </div>
+
+                <div id="bookingInfo" class="booking-info" style="display: none;">
+                    <h4>Active Reservation</h4>
+                    <div id="bookingContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ stall_bookings|json_script:"stall-bookings-data" }}
+
+<script>
+    const stallBookings = JSON.parse(document.getElementById('stall-bookings-data').textContent);
+    let selectedStallId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Architecture Injection (Same as public view)
+        const grid = document.getElementById('mainGrid');
+        const stalls = Array.from(grid.querySelectorAll('.st-unit'));
+        
+        const a03 = stalls.find(s => s.dataset.num === 'A03');
+        if (a03) {
+            const ent = document.createElement('div');
+            ent.className = 'col-span-2 bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] h-[90px]';
+            ent.innerHTML = 'Hall Entrance';
+            grid.insertBefore(ent, a03.nextSibling);
+        }
+
+        const c02 = stalls.find(s => s.dataset.num === 'C02');
+        if (c02) {
+            const network = document.createElement('div');
+            network.className = 'col-span-2 row-span-2 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col items-center justify-center text-slate-400 font-black text-center p-4 gap-2';
+            network.innerHTML = '<span class="material-symbols-outlined text-4xl opacity-20">coffee</span><span class="text-[10px] uppercase tracking-widest">Lounge Area</span>';
+            grid.insertBefore(network, c02);
+        }
+    });
+
+    function setStatus(val) {
+        if (!selectedStallId) return;
+        document.getElementById('formStatus').value = val;
+        document.querySelectorAll('.status-opt').forEach(opt => {
+            opt.classList.toggle('active', opt.dataset.val === val);
+        });
+    }
+
+    function selectStall(id) {
+        selectedStallId = id;
+        const target = document.getElementById('unit-' + id);
+        const d = target.dataset;
+
+        // Reset UI
+        document.querySelectorAll('.st-unit').forEach(u => u.classList.remove('selected'));
+        target.classList.add('selected');
+
+        // Update Panel
+        document.getElementById('panelTitle').innerText = 'Manage Stall ' + d.num;
+        document.getElementById('formStallId').value = id;
+        document.getElementById('formPrice').value = d.price;
+        document.getElementById('formType').value = d.type;
+        document.getElementById('formDim').value = d.dim;
+        document.getElementById('formPos').value = d.pos;
+        document.getElementById('btnSave').disabled = false;
+        
+        setStatus(d.status);
+
+        // Booking Info
+        const bookingBox = document.getElementById('bookingInfo');
+        const bookingContent = document.getElementById('bookingContent');
+        
+        if (stallBookings[id] && d.status === 'booked') {
+            const b = stallBookings[id];
+            bookingBox.style.display = 'block';
+            bookingContent.innerHTML = `
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between text-xs"><span class="text-slate-500 font-bold">Holder:</span><span class="font-black text-slate-900">${b.full_name}</span></div>
+                    <div class="flex justify-between text-xs"><span class="text-slate-500 font-bold">Email:</span><span class="font-bold text-blue-600">${b.email}</span></div>
+                    <div class="flex justify-between text-xs"><span class="text-slate-500 font-bold">Paid:</span><span class="font-black text-slate-900">₹${b.price.toFixed(0)}</span></div>
+                </div>
+            `;
+        } else {
+            bookingBox.style.display = 'none';
+        }
+    }
+
+    document.getElementById('stallForm').onsubmit = function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        const btn = document.getElementById('btnSave');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Saving...';
+        btn.disabled = true;
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const target = document.getElementById('unit-' + selectedStallId);
+                const oldStatus = target.dataset.status;
+                const newStatus = formData.get('status');
+                
+                target.dataset.price = formData.get('price');
+                target.dataset.type = formData.get('stall_type');
+                target.dataset.dim = formData.get('dimensions');
+                target.dataset.pos = formData.get('position');
+                target.dataset.status = newStatus;
+                
+                target.querySelector('.price-sub').innerText = '₹' + formData.get('price');
+                target.className = `st-unit ${newStatus} ${formData.get('stall_type') === 'large' ? 'premium' : ''} selected`;
+                
+                // Live Counter Update
+                if (oldStatus !== newStatus) {
+                    const updateCounter = (status, delta) => {
+                        const id = status === 'maintenance' ? 'blocked-count' : `${status}-count`;
+                        const el = document.getElementById(id);
+                        if (el) {
+                            let count = parseInt(el.innerText) || 0;
+                            el.innerText = Math.max(0, count + delta);
+                        }
+                    };
+                    updateCounter(oldStatus, -1);
+                    updateCounter(newStatus, 1);
+                }
+                
+                // Show floating notification
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex items-center gap-3 animate-bounce z-[101]';
+                toast.innerHTML = '<span class="material-symbols-outlined text-green-400">check_circle</span> Update Successful';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    };
+
+    document.getElementById('globalPricingForm').onsubmit = function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const applyToAll = formData.get('apply_to_all') === 'true';
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span>';
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (applyToAll) {
+                    // Update all stalls in UI
+                    const newPrice = data.new_price;
+                    document.querySelectorAll('.st-unit').forEach(u => {
+                        u.dataset.price = newPrice;
+                        u.querySelector('.price-sub').innerText = '₹' + parseFloat(newPrice).toFixed(0);
+                    });
+                    // Also update single form if a stall is selected
+                    if (selectedStallId) {
+                        document.getElementById('formPrice').value = newPrice;
+                    }
+                }
+                
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex items-center gap-3 animate-bounce z-[101]';
+                toast.innerHTML = '<span class="material-symbols-outlined text-green-400">check_circle</span> Global Pricing Updated';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined">save</span>';
+        });
+    };
+</script>
+{% endblock %}

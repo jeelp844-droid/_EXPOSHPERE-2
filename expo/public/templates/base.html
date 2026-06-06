@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>ExpoSphere</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0b50da",
+            "background-light": "#f5f6f8",
+            "background-dark": "#101622",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+{% load static %}
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER / TOP NAVIGATION
+═══════════════════════════════════════════════════════════ -->
+<header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 sm:h-20">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2 group">
+        <div class="text-primary group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-3xl sm:text-4xl">language</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">ExpoSphere</h1>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="/"
+           class="text-sm font-medium transition-colors {% if request.path == '/' %}text-primary{% else %}text-slate-600 dark:text-slate-300 hover:text-primary{% endif %}">
+          Home
+        </a>
+        <a href="/about/"
+           class="text-sm font-medium transition-colors {% if '/about/' in request.path %}text-primary{% else %}text-slate-600 dark:text-slate-300 hover:text-primary{% endif %}">
+          About
+        </a>
+        <a href="/contact/"
+           class="text-sm font-medium transition-colors {% if '/contact/' in request.path %}text-primary{% else %}text-slate-600 dark:text-slate-300 hover:text-primary{% endif %}">
+          Contact
+        </a>
+        <a href="/work/"
+           class="text-sm font-medium transition-colors {% if '/work/' in request.path %}text-primary{% else %}text-slate-600 dark:text-slate-300 hover:text-primary{% endif %}">
+          How It Work
+        </a>
+        <a href="/exhibition/"
+           class="text-sm font-medium transition-colors {% if '/exhibition/' in request.path %}text-primary{% else %}text-slate-600 dark:text-slate-300 hover:text-primary{% endif %}">
+          Exhibition
+        </a>
+      </nav>
+
+      <!-- Right Side: Auth -->
+      <div class="flex items-center gap-2 sm:gap-4">
+
+        {% if user.is_authenticated %}
+        <div class="flex items-center gap-2 sm:gap-6">
+
+          <!-- ── Notification Bell ── -->
+          <div class="relative" id="notification-container">
+            <button id="notification-bell"
+                    class="relative text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none flex items-center justify-center p-1 sm:p-0">
+              <span class="material-symbols-outlined text-2xl">notifications</span>
+              <span id="notification-badge"
+                    class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center hidden">
+                0
+              </span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div id="notification-dropdown"
+                 class="absolute right-[-40px] sm:right-0 mt-4 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 hidden z-[60] transform origin-top-right transition-all duration-200 scale-95 opacity-0">
+              <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-primary">notifications</span>
+                  <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Notifications</h3>
+                </div>
+                <button id="mark-all-read"
+                        class="text-[10px] font-bold text-primary hover:text-primary/80 uppercase tracking-widest transition-colors">
+                  Mark all read
+                </button>
+              </div>
+              <div id="notification-list" class="max-h-[60vh] sm:max-h-96 overflow-y-auto custom-scrollbar">
+                <div class="p-10 text-center flex flex-col items-center gap-3">
+                  <div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-slate-300">notifications_off</span>
+                  </div>
+                  <p class="text-xs text-slate-400 italic">No new notifications</p>
+                </div>
+              </div>
+              <div class="p-3 border-t border-slate-100 dark:border-slate-800 text-center rounded-b-2xl">
+                <a href="{% url 'list_notifications' %}"
+                   class="inline-flex items-center justify-center gap-2 w-full py-2 text-[11px] font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">
+                  View all activity
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-6 sm:h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+
+          <!-- ── Profile Dropdown ── -->
+          <div class="relative">
+            <button onclick="toggleDropdown()" class="flex items-center gap-3 group focus:outline-none">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold text-slate-900 dark:text-white leading-none">
+                  {{ user.first_name|default:user.username }}
+                </p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  {% if user.is_superuser %}Admin{% else %}{{ user.register_set.first.role|default:"User" }}{% endif %}
+                </p>
+              </div>
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/20 group-hover:border-primary/40 transition-all">
+                {% if user.profile.avatar %}
+                  <img src="{{ user.profile.avatar.url }}" alt="User Avatar" class="w-full h-full object-cover">
+                {% else %}
+                  <img src="https://ui-avatars.com/api/?name={{ user.first_name|default:user.username }}&background=0b50da&color=fff" alt="User Avatar">
+                {% endif %}
+              </div>
+            </button>
+
+            <!-- User Dropdown Menu -->
+            <div id="userDropdown"
+                 class="absolute right-0 mt-4 w-52 sm:w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 hidden z-[60] overflow-hidden">
+              <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Signed in as</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ user.email }}</p>
+              </div>
+              <div class="p-2">
+                <a href="{% url 'user_dashboard' %}"
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all">
+                  <span class="material-symbols-outlined text-lg">dashboard</span>
+                  Dashboard
+                </a>
+                <a href="{% url 'profile_settings' %}"
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all">
+                  <span class="material-symbols-outlined text-lg">person</span>
+                  My Profile
+                </a>
+              </div>
+              <div class="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30">
+                <a href="/logout/"
+                   class="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all">
+                  <span class="material-symbols-outlined text-lg">logout</span>
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Toast Container -->
+        <div id="toast-container" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+        {% else %}
+        <!-- Guest Buttons -->
+        <div class="flex items-center gap-1.5 sm:gap-3 hidden sm:flex">
+          <a href="/login/"
+             class="px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-primary transition-colors">
+            Login
+          </a>
+          <a href="/register/"
+             class="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/20">
+            Sign Up
+          </a>
+        </div>
+        <div class="flex sm:hidden items-center gap-2">
+          <a href="/login/"
+             class="px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:text-primary">
+            Login
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-menu-btn" class="md:hidden p-1.5 ml-1 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none">
+          <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+
+      </div><!-- /Right Side -->
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MOBILE NAVIGATION DRAWER
+═══════════════════════════════════════════════════════════ -->
+<div id="mobile-menu" class="fixed inset-0 z-[200] bg-white dark:bg-background-dark transform translate-x-full transition-transform duration-300 md:hidden flex flex-col">
+  <div class="flex items-center justify-between h-16 px-4 border-b border-slate-100 dark:border-slate-800">
+    <a href="/" class="flex items-center gap-2">
+      <div class="text-primary"><span class="material-symbols-outlined text-3xl">language</span></div>
+      <h1 class="text-xl font-black text-slate-900 dark:text-white">ExpoSphere</h1>
+    </a>
+    <button id="close-mobile-menu" class="p-1.5 text-slate-600 dark:text-slate-300 hover:text-primary focus:outline-none">
+      <span class="material-symbols-outlined text-2xl">close</span>
+    </button>
+  </div>
+  
+  <div class="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6">
+    <a href="/" class="text-xl font-bold transition-colors {% if request.path == '/' %}text-primary{% else %}text-slate-800 dark:text-slate-200{% endif %}">Home</a>
+    <a href="/about/" class="text-xl font-bold transition-colors {% if '/about/' in request.path %}text-primary{% else %}text-slate-800 dark:text-slate-200{% endif %}">About</a>
+    <a href="/contact/" class="text-xl font-bold transition-colors {% if '/contact/' in request.path %}text-primary{% else %}text-slate-800 dark:text-slate-200{% endif %}">Contact</a>
+    <a href="/work/" class="text-xl font-bold transition-colors {% if '/work/' in request.path %}text-primary{% else %}text-slate-800 dark:text-slate-200{% endif %}">How It Work</a>
+    <a href="/exhibition/" class="text-xl font-bold transition-colors {% if '/exhibition/' in request.path %}text-primary{% else %}text-slate-800 dark:text-slate-200{% endif %}">Exhibition</a>
+    
+    {% if not user.is_authenticated %}
+    <div class="mt-4 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+      <a href="/register/" class="w-full text-center px-6 py-3.5 text-sm font-bold bg-primary text-white rounded-xl hover:bg-primary/90 transition shadow-lg shadow-primary/20">Sign Up Free</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE CONTENT
+═══════════════════════════════════════════════════════════ -->
+{% block contact %}{% endblock %}
+{% block content %}{% endblock %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer class="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Footer Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 sm:gap-12 mb-12 sm:mb-16">
+
+      <!-- Brand -->
+      <div class="col-span-1">
+        <div class="flex items-center gap-2 mb-4 sm:mb-6">
+          <span class="material-symbols-outlined text-primary text-2xl sm:text-3xl">language</span>
+          <h2 class="text-lg sm:text-xl font-black text-slate-900 dark:text-white">ExpoSphere</h2>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+          The world's leading platform for discovery and participation in global professional tenders and exhibitions.
+        </p>
+      </div>
+
+      <!-- Explore -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">Explore</h3>
+        <ul class="space-y-3 sm:space-y-4 text-sm text-slate-500 dark:text-slate-400">
+          <li><a href="#" class="hover:text-primary transition-colors">Find Exhibitions</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Top Categories</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Upcoming Events</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Virtual Tours</a></li>
+        </ul>
+      </div>
+
+      <!-- For Organizers -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">For Organizers</h3>
+        <ul class="space-y-3 sm:space-y-4 text-sm text-slate-500 dark:text-slate-400">
+          <li><a href="#" class="hover:text-primary transition-colors">Host an Event</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Marketing Tools</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Analytics</a></li>
+          <li><a href="#" class="hover:text-primary transition-colors">Success Stories</a></li>
+        </ul>
+      </div>
+
+      <!-- Connect -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">Connect</h3>
+        <div class="flex gap-3 mb-6">
+          <a href="#"
+             class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-all"
+             title="Share">
+            <span class="material-symbols-outlined text-[18px]">share</span>
+          </a>
+          <a href="#"
+             class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-all"
+             title="Email">
+            <span class="material-symbols-outlined text-[18px]">mail</span>
+          </a>
+          <a href="#"
+             class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-all"
+             title="Chat">
+            <span class="material-symbols-outlined text-[18px]">chat</span>
+          </a>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          support@ebharattender.com<br/>
+          +1 (555) 123-4567
+        </p>
+      </div>
+
+    </div><!-- /Footer Grid -->
+
+    <!-- Footer Bottom Bar -->
+    <div class="pt-6 sm:pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+      <p class="text-xs text-slate-500 dark:text-slate-400">© 2026 ExpoSphere. All rights reserved.</p>
+      <div class="flex gap-4 sm:gap-6">
+        <a href="#" class="text-xs text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">Privacy Policy</a>
+        <a href="#" class="text-xs text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">Terms of Service</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DJANGO MESSAGES — TOAST
+═══════════════════════════════════════════════════════════ -->
+{% if messages %}
+<div id="django-toast-container" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto z-[9999] flex flex-col gap-3 pointer-events-none">
+  {% for message in messages %}
+  <div class="django-toast pointer-events-auto flex items-center w-full sm:w-80 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border-l-4
+              {% if message.tags == 'success' %}border-green-500
+              {% elif message.tags == 'error' %}border-red-500
+              {% elif message.tags == 'warning' %}border-yellow-500
+              {% else %}border-primary{% endif %}
+              p-4 transform translate-y-10 opacity-0 transition-all duration-300"
+       role="alert">
+    <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl
+                {% if message.tags == 'success' %}text-green-600 bg-green-50
+                {% elif message.tags == 'error' %}text-red-600 bg-red-50
+                {% elif message.tags == 'warning' %}text-yellow-600 bg-yellow-50
+                {% else %}text-white bg-primary{% endif %}">
+      <span class="material-symbols-outlined text-lg sm:text-xl">
+        {% if message.tags == 'success' %}check_circle
+        {% elif message.tags == 'error' %}error
+        {% elif message.tags == 'warning' %}warning
+        {% else %}info{% endif %}
+      </span>
+    </div>
+    <div class="ms-3 text-xs sm:text-sm font-bold text-slate-900 dark:text-white break-words flex-1 pr-2">
+      {{ message }}
+    </div>
+    <button type="button"
+            class="ms-auto text-slate-400 hover:text-slate-600 transition-colors"
+            onclick="this.closest('.django-toast').remove();"
+            aria-label="Close">
+      <span class="material-symbols-outlined text-sm sm:text-base">close</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════ -->
+<script>
+  /* ── Profile dropdown ─────────────────────────── */
+  function toggleDropdown() {
+    document.getElementById("userDropdown").classList.toggle("hidden");
+  }
+  window.addEventListener("click", function(e) {
+    const dropdown = document.getElementById("userDropdown");
+    if (dropdown && !e.target.closest('.relative')) {
+      dropdown.classList.add("hidden");
+    }
+  });
+
+  /* ── Mobile Menu Toggle ───────────────────────── */
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const closeMobileMenu = document.getElementById('close-mobile-menu');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  if(mobileMenuBtn && mobileMenu && closeMobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.remove('translate-x-full');
+      document.body.style.overflow = 'hidden';
+    });
+    closeMobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.add('translate-x-full');
+      document.body.style.overflow = '';
+    });
+  }
+
+  /* ── Django toast auto-dismiss ────────────────── */
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.django-toast').forEach((toast, i) => {
+      setTimeout(() => {
+        requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
+        setTimeout(() => {
+          toast.classList.add('translate-y-10', 'opacity-0');
+          setTimeout(() => toast.remove(), 300);
+        }, 5000);
+      }, i * 200);
+    });
+  });
+</script>
+
+<!-- ── Notification Script ──────────────────────── -->
+{% if user.is_authenticated %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const bell        = document.getElementById('notification-bell');
+  const dropdown    = document.getElementById('notification-dropdown');
+  const badge       = document.getElementById('notification-badge');
+  const list        = document.getElementById('notification-list');
+  const markAllBtn  = document.getElementById('mark-all-read');
+  const toastContainer = document.getElementById('toast-container');
+
+  let lastNotificationId = null;
+  if (!bell) return;
+
+  bell.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.classList.contains('hidden')) {
+      dropdown.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        dropdown.classList.remove('scale-95', 'opacity-0');
+        dropdown.classList.add('scale-100', 'opacity-100');
+      });
+    } else {
+      dropdown.classList.remove('scale-100', 'opacity-100');
+      dropdown.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => dropdown.classList.add('hidden'), 200);
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.remove('scale-100', 'opacity-100');
+      dropdown.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => dropdown.classList.add('hidden'), 200);
+    }
+  });
+
+  function getNotifConfig(type) {
+    const map = {
+      admin:     { icon: 'admin_panel_settings', color: 'bg-red-50 text-red-600',   border: 'border-red-500' },
+      organizer: { icon: 'business_center',       color: 'bg-blue-50 text-blue-600', border: 'border-blue-500' },
+      visitor:   { icon: 'person',                color: 'bg-green-50 text-green-600', border: 'border-green-500' },
+    };
+    return map[type] || { icon: 'notifications', color: 'bg-slate-50 text-slate-600', border: 'border-slate-500' };
+  }
+
+  function showToast(notif) {
+    const cfg = getNotifConfig(notif.type);
+    const toast = document.createElement('div');
+    toast.className = `w-full sm:w-80 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border-l-4 ${cfg.border} p-4 pointer-events-auto transform translate-y-10 opacity-0 transition-all duration-300`;
+    toast.innerHTML = `
+      <div class="flex gap-3">
+        <div class="w-10 h-10 rounded-xl ${cfg.color} flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-xl">${cfg.icon}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${notif.title}</p>
+            <button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="this.closest('.w-full').remove()">
+              <span class="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 line-clamp-2 mt-0.5">${notif.message}</p>
+          <a href="/dashboard/notifications/read/${notif.id}/" class="text-[10px] font-bold text-primary mt-2 inline-block hover:underline">View Details</a>
+        </div>
+      </div>`;
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
+    setTimeout(() => {
+      toast.classList.add('translate-y-[-10px]', 'opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 6000);
+  }
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("{% url 'fetch_notifications' %}");
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data.unread_count > 0) {
+        badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (data.notifications && data.notifications.length > 0) {
+        const latestId = data.notifications[0].id;
+        if (latestId > lastNotificationId && lastNotificationId !== null) {
+          data.notifications.filter(n => n.id > lastNotificationId && !n.is_read).forEach(showToast);
+        }
+        lastNotificationId = latestId;
+
+        list.innerHTML = data.notifications.map(n => {
+          const cfg = getNotifConfig(n.type);
+          return `
+          <div class="px-4 py-3 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${n.is_read ? 'opacity-60' : 'bg-blue-50/40 dark:bg-blue-900/10'} cursor-pointer"
+               onclick="window.location.href='/dashboard/notifications/read/${n.id}/'">
+            <div class="flex items-start gap-3">
+               <div class="w-8 h-8 rounded-lg ${cfg.color} flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-sm">${cfg.icon}</span>
+              </div>
+              <div class="flex-1 min-w-0 text-left">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="text-sm font-semibold text-slate-900 dark:text-white line-clamp-1">${n.title}</p>
+                  ${!n.is_read ? '<div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>' : ''}
+                </div>
+                <p class="text-xs text-slate-500 line-clamp-2 mt-1">${n.message}</p>
+                <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[10px]">schedule</span>
+                  ${n.created_at}
+                </p>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      } else {
+        list.innerHTML = `<div class="p-8 text-center text-sm text-slate-400 italic">No new notifications</div>`;
+        lastNotificationId = 0;
+      }
+    } catch (e) { console.error('Notification fetch error:', e); }
+  };
+
+  markAllBtn.addEventListener('click', async () => {
+    try {
+      const res = await fetch("{% url 'mark_all_notifications_read' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      if (res.ok) fetchNotifications();
+    } catch (e) { console.error('Mark all read error:', e); }
+  });
+
+  fetchNotifications();
+  setInterval(fetchNotifications, 10000);
+});
+</script>
+{% endif %}
+
+<!-- AOS Init -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 1000, once: true, offset: 120, easing: 'ease-out-cubic' });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 md:mb-12">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Geo-Management</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Configure countries and cities where exhibitions can be hosted.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <!-- Countries Management -->
+        <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined">public</span>
+                    </div>
+                    Countries
+                </h3>
+            </div>
+            <div class="p-6 md:p-8">
+                <form method="POST" class="flex gap-2 mb-8">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_country">
+                    <input type="text" name="name" required placeholder="Add new country..." 
+                           class="flex-1 h-12 px-5 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-semibold focus:border-blue-400 transition-all outline-none">
+                    <button type="submit" class="px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:opacity-90 transition-all shadow-lg shadow-black/5">Add</button>
+                </form>
+
+                <div class="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {% for country in countries %}
+                    <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-100">
+                        <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ country.name }}</span>
+                        <a href="{% url 'delete_country' country.id %}" onclick="return confirm('Deleting this country will delete all its cities. Continue?')" 
+                           class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all">
+                            <span class="material-symbols-outlined">delete</span>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-16">
+                        <span class="material-symbols-outlined text-4xl text-slate-200 mb-3 block">public_off</span>
+                        <p class="text-slate-400 text-sm font-medium italic">No countries added yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Cities Management -->
+        <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined">location_city</span>
+                    </div>
+                    Cities
+                </h3>
+            </div>
+            <div class="p-6 md:p-8">
+                <!-- Primary Country Selector -->
+                <div class="mb-8">
+                    <label for="city-country-filter" class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2.5 px-1">Active Region</label>
+                    <div class="relative">
+                        <select id="city-country-filter" class="w-full h-12 pl-5 pr-12 bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl text-sm font-bold focus:border-indigo-400 appearance-none transition-all outline-none text-slate-700 dark:text-slate-200">
+                            <option value="all">Global (View Only)</option>
+                            {% for country in countries %}
+                            <option value="{{ country.id }}">{{ country.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-3 text-slate-400 pointer-events-none">expand_more</span>
+                    </div>
+                </div>
+
+                <form method="POST" id="add-city-form" class="space-y-4 mb-8 pb-8 border-b border-slate-50 dark:border-slate-800">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_city">
+                    <input type="hidden" name="country_id" id="hidden_country_id">
+                    
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Provision New City</p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" name="name" id="city-name-input" required placeholder="City name..." 
+                               class="flex-1 h-12 px-5 bg-slate-100 dark:bg-slate-800 border-transparent rounded-2xl text-sm font-semibold focus:bg-white focus:border-indigo-400 transition-all outline-none">
+                        <button type="submit" id="add-city-btn" class="px-8 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex-shrink-0">Add City</button>
+                    </div>
+                </form>
+
+                <div class="space-y-6 max-h-[460px] overflow-y-auto pr-2 custom-scrollbar">
+                    {% for country in countries %}
+                        {% if country.city_set.all %}
+                        <div class="country-city-group mb-6" data-country-id="{{ country.id }}">
+                            <p class="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-3 px-3 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                {{ country.name }}
+                            </p>
+                            <div class="space-y-1">
+                                {% for city in country.city_set.all %}
+                                <div class="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ city.name }}</span>
+                                    <a href="{% url 'delete_city' city.id %}" onclick="return confirm('Are you sure you want to delete this city?')" 
+                                       class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filter = document.getElementById('city-country-filter');
+    const groups = document.querySelectorAll('.country-city-group');
+    const hiddenInput = document.getElementById('hidden_country_id');
+    const cityNameInput = document.getElementById('city-name-input');
+    const addBtn = document.getElementById('add-city-btn');
+
+    filter.addEventListener('change', function() {
+        const selectedId = this.value;
+        
+        if (selectedId === 'all') {
+            hiddenInput.value = '';
+            cityNameInput.disabled = true;
+            cityNameInput.placeholder = 'Select a country first to add city...';
+            cityNameInput.classList.add('opacity-50');
+            addBtn.disabled = true;
+            addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            hiddenInput.value = selectedId;
+            cityNameInput.disabled = false;
+            cityNameInput.placeholder = 'Add new city name...';
+            cityNameInput.classList.remove('opacity-50');
+            addBtn.disabled = false;
+            addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        groups.forEach(group => {
+            if (selectedId === 'all' || group.getAttribute('data-country-id') === selectedId) {
+                group.style.display = 'block';
+                group.classList.add('animate-fade-in');
+            } else {
+                group.style.display = 'none';
+            }
+        });
+    });
+
+    // Initialize state
+    filter.dispatchEvent(new Event('change'));
+});
+</script>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+</style>
+{% endblock %}

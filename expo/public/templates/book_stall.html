@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contact %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
+
+  /* Stall unit transitions */
+  .st-unit { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .st-unit.selected {
+    background: #f97316 !important;
+    border-color: #f97316 !important;
+    color: white !important;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(249, 115, 22, 0.25);
+    z-index: 10;
+    position: relative;
+  }
+  .st-unit.selected::after { display: none !important; }
+
+  /* Premium badge */
+  .st-unit.premium::after {
+    content: 'PREMIUM';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 8px;
+    background: #f59e0b;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 640px) {
+    .st-unit.premium::after {
+      font-size: 6px;
+      top: 4px;
+      right: 4px;
+      padding: 1px 4px;
+    }
+  }
+
+  /* Scrollbar for right panel */
+  .right-col::-webkit-scrollbar { width: 6px; }
+  .right-col::-webkit-scrollbar-track { background: transparent; }
+  .right-col::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+  /* Hide scrollbar on slider */
+  .premium-slider::-webkit-scrollbar { display: none; }
+  .premium-slider { scrollbar-width: none; }
+
+  /* Slide-in animation for panel content */
+  #pContent { transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease; }
+  #pContent.animating-slide { transform: translateY(15px); opacity: 0; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  BOOKING LAYOUT                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="max-w-7xl mx-auto my-6 sm:my-10 px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-8 items-start text-slate-900">
+
+  <!-- ━━━━━━━━━━━━━━  LEFT COLUMN  ━━━━━━━━━━━━━━ -->
+  <div data-aos="fade-right" data-aos-delay="100">
+
+    <!-- Floor Plan Card -->
+    <div class="bg-white rounded-2xl p-5 sm:p-10 border border-slate-200 shadow-sm">
+
+      <!-- Back Link -->
+      <div class="mb-6 sm:mb-8">
+        <a href="{% url 'exhibition_detail' exhibition.id %}"
+           class="inline-flex items-center gap-2 text-blue-600 font-bold text-xs sm:text-sm no-underline hover:text-blue-800 transition-colors">
+          <i class="fas fa-arrow-left"></i> BACK TO OVERVIEW
+        </a>
+      </div>
+
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-10">
+        <h2 class="text-2xl sm:text-[28px] font-extrabold m-0 text-slate-900">Hall A Floor Plan</h2>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap gap-3 sm:gap-6">
+          <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded bg-blue-600"></div> Available
+          </div>
+          <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded bg-amber-500"></div> Premium
+          </div>
+          <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded bg-orange-500"></div> Selected
+          </div>
+          <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded bg-slate-400"></div> Booked
+          </div>
+          <div class="flex items-center gap-1.5 sm:gap-2.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded bg-red-600"></div> Maintenance
+          </div>
+        </div>
+      </div>
+
+      <!-- Stall Grid -->
+      <div class="border border-dashed border-slate-300 rounded-2xl py-6 sm:py-16 px-4 sm:px-10 bg-white overflow-x-auto pointer-events-auto">
+        <div class="grid grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4 min-w-[500px] md:min-w-0" id="architectural-grid">
+
+          {% for stall in stalls %}
+            <div
+              class="st-unit
+                     {% if stall.stall_type == 'large' %}col-span-2 premium{% endif %}
+                     {% if stall.status == 'available' and stall.stall_type == 'large' %}bg-amber-50 text-amber-500 border-2 border-amber-200 shadow-sm{% endif %}
+                     {% if stall.status == 'available' and stall.stall_type != 'large' %}bg-blue-50 text-blue-600 border-2 border-blue-100{% endif %}
+                     {% if stall.status == 'booked' %}bg-slate-200 text-slate-400 border-2 border-transparent opacity-60 cursor-not-allowed{% endif %}
+                     {% if stall.status == 'maintenance' %}bg-red-50 text-red-600 border-2 border-red-100 opacity-80 cursor-not-allowed{% endif %}
+                     h-[70px] sm:h-[85px] rounded-xl flex flex-col items-center justify-center font-extrabold text-xs sm:text-sm cursor-pointer relative overflow-hidden"
+              id="unit-{{ stall.id }}"
+              onclick="selectSall('{{ stall.id }}')"
+              data-num="{{ stall.stall_number }}"
+              data-price="{{ stall.price }}"
+              data-fmt-price="₹{{ stall.price|floatformat:0 }}"
+              data-dim="{{ stall.dimensions }}"
+              data-pos="{{ stall.position }}"
+              data-type="{{ stall.stall_type }}"
+              data-img="{% if stall.image %}{{ stall.image.url }}{% elif exhibition.image %}{{ exhibition.image.url }}{% else %}https://images.unsplash.com/photo-1540575861501-7ad060e39fe5?auto=format&fit=crop&q=100&w=800{% endif %}">
+              <span>{{ stall.stall_number }}</span>
+              {% if stall.status == 'available' %}
+                <span class="text-[10px] sm:text-xs font-semibold mt-0.5 sm:mt-1 opacity-80">₹{{ stall.price|floatformat:0 }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+        </div>
+      </div>
+
+      <p class="text-center text-slate-400 text-xs sm:text-sm italic mt-6 sm:mt-8">
+        Design reflects actual stall sizes (Premium: 18sqm vs Standard: 9sqm) <br class="block sm:hidden"> Scroll horizontally to see full layout on small screens.
+      </p>
+    </div>
+
+    <!-- Info Bar -->
+    <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between px-5 sm:px-8 py-5 sm:py-6 bg-white rounded-2xl border border-slate-200 shadow-sm gap-4 sm:gap-0">
+      <div class="flex gap-4 items-center">
+        <div class="w-10 h-10 sm:w-[52px] sm:h-[52px] bg-blue-50 rounded-xl sm:rounded-[14px] flex items-center justify-center text-blue-600 text-lg sm:text-[22px]">
+          <i class="fas fa-store"></i>
+        </div>
+        <div>
+          <h4 class="m-0 text-[11px] sm:text-[13px] text-slate-500 font-bold uppercase tracking-wide">Standard Price</h4>
+          <span class="text-lg sm:text-[22px] font-extrabold text-slate-900">₹{{ exhibition.stall_price|floatformat:0 }}</span>
+        </div>
+      </div>
+      <div class="w-full sm:w-auto text-left sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-8">
+        <h4 class="m-0 text-[11px] sm:text-[13px] text-slate-500 font-bold uppercase tracking-wide">Real-time Availability</h4>
+        <span class="text-xl sm:text-[22px] font-extrabold text-slate-900">
+          {{ available_stalls }}<span class="text-xs sm:text-sm font-semibold text-slate-400"> / {{ exhibition.total_stalls }}</span>
+        </span>
+      </div>
+    </div>
+
+  </div><!-- /LEFT COLUMN -->
+
+
+  <!-- ━━━━━━━━━━━━━━  RIGHT COLUMN  ━━━━━━━━━━━━━━ -->
+  <div class="right-col lg:sticky lg:top-10 max-h-none lg:max-h-[calc(100vh-80px)] overflow-y-visible lg:overflow-y-auto pr-0 lg:pr-1"
+       data-aos="fade-left" data-aos-delay="200">
+
+    <!-- Section Title: Premium Slider -->
+    <h4 class="text-xs sm:text-sm font-extrabold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 sm:gap-2.5 uppercase tracking-wide">
+      <i class="fas fa-crown text-amber-500"></i> Premium Stall Highlights
+    </h4>
+
+    <!-- Premium Slider -->
+    <div class="mb-6 sm:mb-8">
+      <div class="premium-slider flex gap-3 sm:gap-4 overflow-x-auto pb-4" style="scroll-snap-type: x mandatory;">
+        {% for stall in stalls %}
+          {% if stall.stall_type == 'large' and stall.status == 'available' %}
+            <div class="min-w-[160px] sm:min-w-[200px] bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-200 cursor-pointer
+                        transition-all duration-300 hover:border-amber-400 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden"
+                 id="slide-{{ stall.id }}"
+                 onclick="selectSall('{{ stall.id }}', true)"
+                 style="scroll-snap-align: start;">
+              <span class="block text-lg sm:text-xl font-extrabold mb-1 sm:mb-2 text-slate-900">Stall {{ stall.stall_number }}</span>
+              <span class="text-amber-500 font-bold text-sm sm:text-base">₹{{ stall.price|floatformat:0 }}</span>
+              <span class="block text-[10px] sm:text-xs text-slate-500 mt-1">{{ stall.dimensions }}</span>
+              <div class="mt-2.5 sm:mt-3 flex items-center gap-1 sm:gap-1.5 text-green-500 text-[9px] sm:text-[11px] font-bold">
+                <i class="fas fa-check-circle"></i> AVAILABLE NOW
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Section Title: Booking Details -->
+    <h4 class="text-xs sm:text-sm font-extrabold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 sm:gap-2.5 uppercase tracking-wide">
+      <i class="fas fa-info-circle text-amber-500"></i> Booking Details
+    </h4>
+
+    <!-- Preview Card -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200 mb-5 sm:mb-6" id="bookingPreviewPortion">
+
+      <!-- Image Box -->
+      <div class="h-[150px] sm:h-[200px] relative">
+        {% if exhibition.image %}
+          <img src="{{ exhibition.image.url }}" id="pImg" class="w-full h-full object-cover" alt="Stall preview">
+        {% else %}
+          <img src="https://images.unsplash.com/photo-1540575861501-7ad060e39fe5?auto=format&fit=crop&q=100&w=800"
+               id="pImg" class="w-full h-full object-cover" alt="Stall preview">
+        {% endif %}
+        <div class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-orange-500 text-white text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-1 rounded uppercase tracking-wide">
+          Current Selection
+        </div>
+      </div>
+
+      <!-- Preview Content -->
+      <div class="relative overflow-hidden">
+        <div class="p-5 sm:p-8" id="pContent">
+
+          <h3 class="text-xl sm:text-[22px] font-extrabold mb-5 sm:mb-6 text-slate-800" id="pTitle">Pick Your Spot</h3>
+
+          <!-- Specs Grid -->
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-100">
+              <span class="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-1.5">Dimensions</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900" id="pDim">--</span>
+            </div>
+            <div class="bg-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-100">
+              <span class="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-1.5">Position</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-900" id="pPos">--</span>
+            </div>
+          </div>
+
+          <!-- Pricing Breakdown -->
+          <div class="border-t border-slate-100 pt-5 sm:pt-6 mt-6 sm:mt-8">
+            <div class="flex justify-between text-xs sm:text-sm text-slate-500 font-medium mb-2.5">
+              <span>Base Stall Rate</span>
+              <strong class="text-slate-800" id="pBase">₹0</strong>
+            </div>
+            <div class="flex justify-between text-xs sm:text-sm text-slate-500 font-medium mb-2.5">
+              <span>Taxes &amp; Service (5%)</span>
+              <span id="pFee">₹0</span>
+            </div>
+            <div class="flex justify-between items-center mt-4 sm:mt-5">
+              <span class="text-sm sm:text-[15px] font-bold">Estimated Total</span>
+              <strong class="text-2xl sm:text-[28px] font-extrabold text-blue-700" id="pTotal">₹0</strong>
+            </div>
+          </div>
+
+          <!-- Confirm Button -->
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="stall_id" id="selId">
+            <button
+              type="submit"
+              id="pBtn"
+              disabled
+              class="w-full bg-blue-600 text-white py-3.5 sm:py-[18px] rounded-xl font-bold text-sm sm:text-[15px] border-0 cursor-pointer mt-5 sm:mt-6
+                     flex items-center justify-center gap-2 sm:gap-3
+                     transition-all duration-200
+                     hover:not(:disabled):bg-blue-700 hover:not(:disabled):-translate-y-0.5 hover:not(:disabled):shadow-[0_10px_20px_rgba(37,99,235,0.2)]
+                     disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed">
+              Confirm Selection <i class="fas fa-chevron-right"></i>
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div><!-- /Preview Card -->
+
+    <!-- Pro Tip -->
+    <div class="p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-xl sm:rounded-2xl">
+      <div class="flex gap-3 sm:gap-4">
+        <i class="fas fa-lightbulb text-blue-700 text-base sm:text-lg mt-0.5"></i>
+        <div>
+          <h5 class="m-0 mb-1 sm:mb-1.5 text-xs sm:text-sm font-extrabold text-blue-900">Pro Tip</h5>
+          <p class="m-0 text-[11px] sm:text-[13px] text-blue-800 leading-relaxed">
+            Premium stalls (orange) offer 2x visibility and are located near the main entrance.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /RIGHT COLUMN -->
+
+</div><!-- /BOOKING LAYOUT -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    updatePricingDisplay(0);
+
+    const grid = document.getElementById('architectural-grid');
+    const stalls = Array.from(grid.querySelectorAll('.st-unit'));
+
+    // ── Main Entrance placeholder ──────────────────────────────────
+    const a03 = stalls.find(s => s.dataset.num === 'A03');
+    if (a03) {
+      const entrance = document.createElement('div');
+      entrance.className =
+        'col-span-2 h-[70px] sm:h-[85px] bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl ' +
+        'flex items-center justify-center text-slate-500 font-bold text-[10px] sm:text-sm uppercase tracking-widest';
+      entrance.innerHTML = '<i class="fas fa-door-open mr-1 sm:mr-2"></i> Main Entrance';
+      grid.insertBefore(entrance, a03.nextSibling);
+    }
+
+    // ── Networking Lounge placeholder ──────────────────────────────
+    const c02 = stalls.find(s => s.dataset.num === 'C02');
+    if (c02) {
+      const lounge = document.createElement('div');
+      lounge.className =
+        'col-span-2 row-span-2 bg-slate-50 border border-slate-200 rounded-xl ' +
+        'flex flex-col items-center justify-center text-slate-500 font-extrabold text-xs sm:text-base text-center gap-1 sm:gap-2';
+      lounge.style.minHeight = window.innerWidth < 640 ? '70px' : '85px';
+      lounge.innerHTML = '<i class="fas fa-coffee text-xl sm:text-2xl text-slate-400"></i><span>Networking<br>Lounge</span>';
+      grid.insertBefore(lounge, c02);
+    }
+  });
+
+  // ── Pricing calc ─────────────────────────────────────────────────
+  function updatePricingDisplay(base) {
+    const fee   = base * 0.05;
+    const total = base + fee;
+    const fmt = n => '₹' + n.toLocaleString(undefined, { minimumFractionDigits: 0 });
+    document.getElementById('pBase').innerText  = fmt(base);
+    document.getElementById('pFee').innerText   = fmt(fee);
+    document.getElementById('pTotal').innerText = fmt(total);
+  }
+
+  // ── Stall selection ───────────────────────────────────────────────
+  function selectSall(id, fromSlider = false) {
+    const target = document.getElementById('unit-' + id);
+    if (!target || target.classList.contains('booked') || target.classList.contains('maintenance')) return;
+
+    const d        = target.dataset;
+    const pContent = document.getElementById('pContent');
+    const pImg     = document.getElementById('pImg');
+    const previewBox = document.getElementById('bookingPreviewPortion');
+
+    // Animate out
+    pContent.classList.add('animating-slide');
+
+    setTimeout(() => {
+      // ── Reset all UI ────────────────────────────────────────────
+      document.querySelectorAll('.st-unit').forEach(u => u.classList.remove('selected'));
+      document.querySelectorAll('[id^="slide-"]').forEach(c => {
+        c.classList.remove('border-orange-500', 'bg-orange-50');
+        c.classList.add('border-slate-200');
+      });
+
+      // ── Activate stall ──────────────────────────────────────────
+      target.classList.add('selected');
+
+      const slideCard = document.getElementById('slide-' + id);
+      if (slideCard) {
+        slideCard.classList.remove('border-slate-200');
+        slideCard.classList.add('border-orange-500', 'bg-orange-50');
+        if (!fromSlider) {
+          slideCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+
+      // ── Update side panel ────────────────────────────────────────
+      document.getElementById('pTitle').innerText = 'Stall ' + d.num + (d.type === 'large' ? ' • Premium Corner' : ' • Standard Aisle');
+      document.getElementById('pDim').innerText   = d.dim;
+      document.getElementById('pPos').innerText   = d.pos;
+      document.getElementById('selId').value      = id;
+      document.getElementById('pBtn').disabled    = false;
+      updatePricingDisplay(parseFloat(d.price));
+      pImg.src = d.img;
+
+      // scroll viewport directly to confirmation component logically if viewed on mobile 
+      if(window.innerWidth < 1024) {
+          previewBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // ── Animate in ──────────────────────────────────────────────
+      pContent.classList.remove('animating-slide');
+      pContent.animate(
+        [{ transform: 'translateY(15px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }],
+        { duration: 400, easing: 'cubic-bezier(0.4,0,0.2,1)' }
+      );
+    }, 50);
+
+    if (fromSlider) {
+      if(window.innerWidth >= 1024) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
+</script>
+
+{% endblock %}

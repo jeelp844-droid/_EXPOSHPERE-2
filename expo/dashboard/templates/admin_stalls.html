@@ -1,0 +1,333 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ===== Admin Stalls — Clean Style ===== */
+
+    /* Page header */
+    .as-title {
+        font-size: clamp(22px, 4vw, 30px);
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .dark .as-title { color: #f8fafc; }
+    .as-subtitle {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Stats container */
+    .as-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 768px) {
+        .as-stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .as-stat-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+    }
+    .dark .as-stat-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+    .as-stat-icon {
+        width: 54px; height: 54px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .as-stat-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #64748b;
+    }
+    .as-stat-value {
+        font-size: 34px;
+        font-weight: 940;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-top: 4px;
+    }
+    .dark .as-stat-value { color: #f1f5f9; }
+
+    /* Filter Bar */
+    .as-filter-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        padding: 12px 24px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+    }
+    .dark .as-filter-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+    .as-filter-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .as-ex-dropdown {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        display: flex;
+        flex: 1;
+        align-items: center;
+        min-width: 200px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .dark .as-ex-dropdown {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .as-ex-dropdown:focus-within {
+        border-color: #6366f1;
+        background: #fff;
+    }
+    .as-ex-dropdown select {
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+        padding: 12px 40px 12px 16px;
+        font-size: 13px;
+        font-weight: 750;
+        color: #0f172a;
+        cursor: pointer;
+        appearance: none;
+    }
+    .dark .as-ex-dropdown select { color: #f1f5f9; }
+
+    /* Content Area */
+    .as-content-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 24px;
+        padding: 8px;
+        box-shadow: 0 1px 10px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+    .dark .as-content-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Table Styles */
+    .as-table { width: 100%; border-collapse: collapse; }
+    .as-table th {
+        padding: 16px 20px;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #94a3b8;
+        text-align: left;
+    }
+    .as-row td {
+        padding: 20px;
+        border-top: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+    .dark .as-row td { border-top-color: #1e293b; }
+
+    /* Badges */
+    .as-badge-stall {
+        background: #f3e8ff;
+        color: #7c3aed;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+    .as-status-completed {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #dcfce7;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+</style>
+
+<div class="w-full max-w-full overflow-x-hidden p-4 md:p-6 lg:p-8">
+
+    <!-- ====== PAGE HEADER ====== -->
+    <div class="mb-8" data-aos="fade-up">
+        <h1 class="as-title">Global Stall Allocations</h1>
+        <p class="as-subtitle">A comprehensive view of every active mapped stall reservation across the platform.</p>
+    </div>
+
+    <!-- ====== STATS GRID ====== -->
+    <div class="as-stats-grid mb-6">
+        <!-- Exhibitions -->
+        <div class="as-stat-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="as-stat-icon" style="background:#eff6ff;">
+                <span class="material-symbols-outlined" style="color:#3b82f6; font-size: 28px;">event</span>
+            </div>
+            <div>
+                <p class="as-stat-label">Total Exhibitions</p>
+                <h3 class="as-stat-value" id="stat-exhibitions">{{ stats.total_exhibitions }}</h3>
+            </div>
+        </div>
+        <!-- Total Allocations -->
+        <div class="as-stat-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="as-stat-icon" style="background:#f5f3ff;">
+                <span class="material-symbols-outlined" style="color:#8b5cf6; font-size: 28px;">storefront</span>
+            </div>
+            <div>
+                <p class="as-stat-label">Total Stall Allocations</p>
+                <h3 class="as-stat-value" id="stat-allocations">{{ stats.total_allocations }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== FILTER CONTROLS ====== -->
+    <div class="as-filter-card mb-6" data-aos="fade-up">
+        <div class="as-filter-label">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #cbd5e1;">filter_list</span>
+            Select Exhibition
+        </div>
+        <div class="as-ex-dropdown">
+            <select id="exhibition-select" onchange="updateExhibition(this.value)">
+                <option value="all">Total Overview (All Exhibitions)</option>
+                {% for ex in all_exhibitions %}
+                <option value="{{ ex.id }}" {% if current_exhibition_id == ex.id|stringformat:"i" %}selected{% endif %}>{{ ex.title }}</option>
+                {% endfor %}
+            </select>
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8; pointer-events: none; position: absolute; right: 16px;" aria-hidden="true">expand_more</span>
+        </div>
+    </div>
+
+    <!-- ====== CONTENT AREA ====== -->
+    <div class="as-content-card" data-aos="fade-up">
+        {% if bookings %}
+        <div id="bookings-wrapper">
+            {% include 'dashboard/partials/admin_stalls_rows.html' %}
+        </div>
+        {% else %}
+        <div class="py-20 text-center flex flex-col items-center justify-center">
+            <div class="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-4xl text-slate-200 dark:text-slate-700">inventory_2</span>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 dark:text-white">No Stall Allocations</h3>
+            <p class="text-slate-500 text-sm mt-2 max-w-sm">No active stall mappings were found for the selected exhibition criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    let currentExId = '{{ current_exhibition_id|default:"all" }}';
+
+    function updateExhibition(exId) {
+        currentExId = exId;
+        refreshDashboard();
+    }
+
+    async function refreshDashboard() {
+        const wrapper = document.getElementById('bookings-wrapper');
+        if (wrapper) wrapper.style.opacity = '0.3';
+
+        let url = "{% url 'admin_stalls' %}?";
+        const params = new URLSearchParams();
+        if (currentExId !== 'all') params.append('exhibition', currentExId);
+        url += params.toString();
+
+        try {
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Network error');
+            const data = await response.json();
+            if (wrapper) {
+                wrapper.innerHTML = data.bookings_html;
+                if (data.stats) {
+                    updateStatValue('stat-exhibitions', data.stats.total_exhibitions);
+                    updateStatValue('stat-allocations', data.stats.total_allocations);
+                }
+                setTimeout(() => { wrapper.style.opacity = '1'; }, 300);
+            } else {
+                location.reload();
+            }
+            window.history.pushState({}, '', url);
+        } catch (error) {
+            console.error('Error:', error);
+            window.location.href = url;
+        }
+    }
+
+    function updateStatValue(id, value) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.transform = 'scale(1.15)';
+        el.style.color = '#6366f1';
+        setTimeout(() => {
+            el.innerText = value;
+            el.style.transform = 'scale(1)';
+            el.style.color = '';
+        }, 150);
+    }
+
+    function toggleDetails(id) {
+        const isMobile = window.innerWidth < 1024;
+        const targetId = isMobile ? 'details-mobile-' + id : 'details-desktop-' + id;
+        const btnId   = isMobile ? 'btn-mobile-' + id   : 'btn-desktop-' + id;
+        const row = document.getElementById(targetId);
+        const btn = document.getElementById(btnId);
+        if (!row || !btn) return;
+        const icon = btn.querySelector('span');
+        if (row.style.display === 'none' || row.classList.contains('hidden')) {
+            row.style.display = isMobile ? 'block' : 'table-row';
+            row.classList.remove('hidden');
+            setTimeout(() => {
+                row.style.opacity = '1';
+                if (icon) icon.innerText = 'visibility_off';
+                btn.classList.add('bg-indigo-600', 'text-white');
+                btn.classList.remove('bg-indigo-50', 'text-indigo-500');
+            }, 10);
+        } else {
+            row.style.opacity = '0';
+            if (icon) icon.innerText = 'visibility';
+            btn.classList.remove('bg-indigo-600', 'text-white');
+            btn.classList.add('bg-indigo-50', 'text-indigo-500');
+            setTimeout(() => {
+                row.style.display = 'none';
+                row.classList.add('hidden');
+            }, 300);
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="max-w-3xl mx-auto mb-6 md:mb-8 text-center">
+    <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">Edit Exhibition</h1>
+    <p class="text-slate-500 text-sm mt-1 truncate px-4">{{ exhibition.title }}</p>
+</div>
+
+<div class="max-w-3xl mx-auto bg-white dark:bg-slate-900 p-5 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <form method="POST" enctype="multipart/form-data" class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Title -->
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Exhibition Title</label>
+            <input type="text" name="title" value="{{ exhibition.title }}" required
+                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </div>
+
+        <!-- Image -->
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Exhibition Image</label>
+            <input type="file" name="image" id="imageInput" accept="image/*"
+                   class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary file:text-white hover:file:bg-primary/90 transition-all cursor-pointer">
+            <div id="imagePreview" class="mt-2 w-full h-44 md:h-52 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50">
+                {% if exhibition.image %}
+                    <img src="{{ exhibition.image.url }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="material-symbols-outlined text-3xl text-slate-300">image</span>
+                        <span class="text-xs text-slate-400">Image Preview</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</label>
+            <textarea name="description" rows="4"
+                      class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none">{{ exhibition.description }}</textarea>
+        </div>
+
+        <!-- Category -->
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+            <select name="category" required
+                    class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if exhibition.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Venue -->
+        <div class="space-y-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Venue</label>
+            <input type="text" name="venue" value="{{ exhibition.venue }}"
+                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </div>
+
+        <!-- Country & City -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Country</label>
+                <select name="country" id="country" required
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                    <option value="">Select Country</option>
+                    {% for country in countries %}
+                        <option value="{{ country.id }}" {% if exhibition.country.id == country.id %}selected{% endif %}>{{ country.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">City</label>
+                <select name="city" id="city" required
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                    <option value="">Select City</option>
+                    {% for city in cities %}
+                        <option value="{{ city.id }}" {% if exhibition.city.id == city.id %}selected{% endif %}>{{ city.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Start Date</label>
+                <input type="date" name="start_date" value="{{ exhibition.start_date|date:'Y-m-d' }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">End Date</label>
+                <input type="date" name="end_date" value="{{ exhibition.end_date|date:'Y-m-d' }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+        </div>
+
+        <!-- Times -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Start Time</label>
+                <input type="time" name="start_time" value="{{ exhibition.start_time|time:'H:i' }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">End Time</label>
+                <input type="time" name="end_time" value="{{ exhibition.end_time|time:'H:i' }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+        </div>
+
+        <!-- Prices -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket Price (₹)</label>
+                <input type="number" name="ticket_price" value="{{ exhibition.ticket_price }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stall Price (₹)</label>
+                <input type="number" name="stall_price" value="{{ exhibition.stall_price }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Stalls</label>
+                <input type="number" name="total_stalls" value="{{ exhibition.total_stalls }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Tickets</label>
+                <input type="number" name="total_tickets" value="{{ exhibition.total_tickets }}"
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            </div>
+        </div>
+
+        <button type="submit"
+                class="w-full mt-2 py-3.5 bg-slate-900 dark:bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-opacity shadow-lg flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-xl">save</span>
+            Update Exhibition
+        </button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+/* IMAGE PREVIEW */
+$("#imageInput").change(function(){
+    const file = this.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            $("#imagePreview").html('<img src="'+e.target.result+'" class="w-full h-full object-cover">');
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+/* COUNTRY CITY AJAX */
+$("#country").change(function(){
+    var countryId = $(this).val();
+    $.ajax({
+        url: "{% url 'load_cities' %}",
+        data:{ 'country': countryId },
+        success:function(data){
+            $("#city").html('<option value="">Select City</option>');
+            data.forEach(function(city){
+                $("#city").append('<option value="'+city.id+'">'+city.name+'</option>');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

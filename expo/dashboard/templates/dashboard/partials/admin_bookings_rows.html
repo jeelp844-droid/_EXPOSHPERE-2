@@ -1,0 +1,321 @@
+<!-- ====== DESKTOP TABLE (lg and above) ====== -->
+<div class="hidden lg:block overflow-x-auto bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+    <table class="abp-table">
+        <thead>
+            <tr>
+                <th style="padding-left: 24px;">Booker Profile</th>
+                <th>Exhibition Host</th>
+                <th style="text-align: center;">Format</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: center;">Amount</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: right;">Date</th>
+                <th style="text-align: right; padding-right: 24px;">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+            {% for booking in bookings %}
+            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all">
+                <!-- Booker -->
+                <td style="padding-left: 24px;">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center font-black text-sm uppercase flex-shrink-0">
+                            {{ booking.user.username|slice:":2" }}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-black text-slate-900 dark:text-white text-[13px] truncate">{{ booking.user.get_full_name|default:booking.user.username }}</p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-0.5 truncate">{{ booking.user.email }}</p>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Exhibition -->
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-8 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 flex-shrink-0 bg-slate-50">
+                            {% if booking.exhibition.image %}
+                                <img src="{{ booking.exhibition.image.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center"><span class="material-symbols-outlined text-[10px] text-slate-300">image</span></div>
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-black text-slate-900 dark:text-white text-[13px] truncate max-w-[180px]">{{ booking.exhibition.title }}</p>
+                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-tight mt-0.5">Org: {{ booking.exhibition.user.username }}</p>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Type -->
+                <td class="text-center">
+                    {% if booking.booking_type == 'stall' %}
+                        <span class="px-2.5 py-1 bg-purple-50 text-purple-600 font-black text-[10px] rounded-lg border border-purple-100 uppercase">Stall</span>
+                    {% else %}
+                        <span class="px-2.5 py-1 bg-blue-50 text-blue-600 font-black text-[10px] rounded-lg border border-blue-100 uppercase">Ticket</span>
+                    {% endif %}
+                </td>
+
+                <!-- Qty -->
+                <td class="text-center">
+                    <span class="font-black text-slate-900 dark:text-white">{{ booking.stalls }}</span>
+                </td>
+
+                <!-- Amount -->
+                <td class="text-center">
+                    <span class="font-black text-slate-900 dark:text-white">₹{{ booking.total_price }}</span>
+                </td>
+
+                <!-- Status -->
+                <td class="text-center">
+                    {% if booking.payment_status == 'completed' or booking.payment_status == 'paid' %}
+                        <span class="px-3 py-1 bg-emerald-50 text-emerald-600 font-black text-[10px] rounded-xl border border-emerald-100 uppercase tracking-widest">Completed</span>
+                    {% elif booking.payment_status == 'pending' %}
+                        <span class="px-3 py-1 bg-amber-50 text-amber-600 font-black text-[10px] rounded-xl border border-amber-100 uppercase tracking-widest">Pending</span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-red-50 text-red-600 font-black text-[10px] rounded-xl border border-red-100 uppercase tracking-widest">Failed</span>
+                    {% endif %}
+                </td>
+
+                <!-- Date -->
+                <td class="text-right">
+                    <div class="flex flex-col items-end">
+                        <span class="text-[13px] font-black text-slate-800 dark:text-slate-200">{{ booking.created_at|date:"M d, Y" }}</span>
+                        <span class="text-[10px] font-bold text-slate-400 mt-0.5">{{ booking.created_at|time:"H:i A" }}</span>
+                    </div>
+                </td>
+
+                <!-- Actions -->
+                <td style="padding-right: 24px;" class="text-right">
+                    <div class="flex justify-end gap-2">
+                        {% if booking.student_id_proof %}
+                        <button onclick="viewStudentID('{{ booking.student_id_proof.url }}')" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-[16px]">badge</span>
+                        </button>
+                        {% endif %}
+                        {% if booking.booking_type == 'stall' %}
+                        <button onclick="toggleDetails('{{ booking.id }}')" class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-[16px] transition-transform" id="icon-desktop-{{ booking.id }}">visibility</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Expandable detail row -->
+            {% if booking.booking_type == 'stall' %}
+            <tr id="details-desktop-{{ booking.id }}" class="hidden" style="opacity:0; transition: opacity 0.3s ease;">
+                <td colspan="8" class="px-6 pb-6 pt-0 border-none">
+                    <div class="bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-6 mx-2 mt-2">
+                        <div class="grid grid-cols-3 gap-8">
+                            
+                            <!-- Company -->
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-sm">business</span> Operating Entity</p>
+                                <p class="text-[14px] font-black text-slate-900 dark:text-white">{{ booking.company_name|default:"Independent Contractor" }}</p>
+                                
+                                <div class="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <p class="text-[8.5px] font-black text-slate-300 uppercase tracking-wider mb-1">Rep.</p>
+                                        <p class="text-xs font-bold text-slate-600 dark:text-slate-400 truncate">{{ booking.representative_name|default:booking.user.get_full_name }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[8.5px] font-black text-slate-300 uppercase tracking-wider mb-1">Contact</p>
+                                        <p class="text-xs font-bold text-slate-600 dark:text-slate-400">{{ booking.contact_number|default:"N/A" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stall Specification -->
+                            <div class="border-l border-slate-200 dark:border-slate-800 pl-6">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-sm">architecture</span> Hardware Assignment</p>
+                                {% if booking.stall_instance %}
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center shadow-sm">
+                                            <span class="text-[8px] font-black opacity-40 uppercase tracking-widest">ID</span>
+                                            <span class="text-lg font-black text-indigo-500 line-height-1">#{{ booking.stall_instance.stall_number }}</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-[13px] font-black text-slate-900 dark:text-white uppercase">{{ booking.stall_instance.stall_type }} Class</p>
+                                            <p class="text-xs font-bold text-slate-400 mt-0.5">{{ booking.stall_instance.dimensions|default:"3x3m" }}</p>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg w-fit">
+                                        <span class="material-symbols-outlined text-[16px]">warning</span>
+                                        <p class="text-[10px] font-black uppercase tracking-widest">Pending Allocation</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Utilities -->
+                            <div class="border-l border-slate-200 dark:border-slate-800 pl-6">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-sm">room_service</span> Provisioned Output</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="px-2 py-1.5 flex items-center gap-1.5 rounded-lg border text-[9.5px] font-black uppercase {% if booking.has_wifi %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-[14px]">wifi</span> WiFi
+                                    </div>
+                                    <div class="px-2 py-1.5 flex items-center gap-1.5 rounded-lg border text-[9.5px] font-black uppercase {% if booking.has_extra_chairs %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-[14px]">chair</span> Chairs
+                                    </div>
+                                    <div class="px-2 py-1.5 flex items-center gap-1.5 rounded-lg border text-[9.5px] font-black uppercase {% if booking.has_spotlight %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-[14px]">lightbulb</span> Lighting
+                                    </div>
+                                    <div class="px-2 py-1.5 flex items-center gap-1.5 rounded-lg border text-[9.5px] font-black uppercase {% if booking.has_tv_display %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-[14px]">tv</span> Display
+                                    </div>
+                                    <div class="px-2 py-1.5 flex items-center gap-1.5 rounded-lg border text-[9.5px] font-black uppercase {% if booking.has_power_strip %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-[14px]">power</span> Power
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% empty %}
+            <tr>
+                <td colspan="8" class="px-6 py-20 text-center">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="w-16 h-16 rounded-3xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-3xl text-slate-200 dark:text-slate-700">inbox</span>
+                        </div>
+                        <div>
+                            <p class="font-black text-slate-900 dark:text-white text-md">Empty Ledger</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">No bookings match criteria</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ====== MOBILE CARDS ====== -->
+<div class="lg:hidden space-y-4 p-1">
+    {% for booking in bookings %}
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden" data-aos="fade-up">
+        
+        <!-- Mobile Header (Status & Badges) -->
+        <div class="px-5 py-3.5 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                {% if booking.booking_type == 'stall' %}
+                    <span class="px-2.5 py-1 bg-purple-50 text-purple-600 font-black text-[9px] rounded-lg border border-purple-100 uppercase tracking-widest">Stall</span>
+                {% else %}
+                    <span class="px-2.5 py-1 bg-blue-50 text-blue-600 font-black text-[9px] rounded-lg border border-blue-100 uppercase tracking-widest">Ticket</span>
+                {% endif %}
+                <span class="text-[10px] font-black text-slate-400 tracking-tighter uppercase">#BK{{ booking.id|stringformat:"04d" }}</span>
+            </div>
+            {% if booking.payment_status == 'completed' or booking.payment_status == 'paid' %}
+                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 font-black text-[9px] rounded-lg border border-emerald-100 uppercase tracking-wider">Completed</span>
+            {% elif booking.payment_status == 'pending' %}
+                <span class="px-2.5 py-1 bg-amber-50 text-amber-600 font-black text-[9px] rounded-lg border border-amber-100 uppercase tracking-wider">Pending</span>
+            {% else %}
+                <span class="px-2.5 py-1 bg-red-50 text-red-600 font-black text-[9px] rounded-lg border border-red-100 uppercase tracking-wider">Failed</span>
+            {% endif %}
+        </div>
+
+        <!-- Mobile Body -->
+        <div class="p-5">
+            <!-- User Bar -->
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-indigo-500 flex-shrink-0 text-sm uppercase">
+                    {{ booking.user.username|slice:":1" }}
+                </div>
+                <div class="min-w-0">
+                    <p class="font-black text-slate-900 dark:text-white text-[13px] truncate">{{ booking.user.get_full_name|default:booking.user.username }}</p>
+                    <p class="text-[10px] font-bold text-slate-400 truncate">{{ booking.user.email }}</p>
+                </div>
+            </div>
+
+            <!-- Exhibition & Price Block -->
+            <div class="bg-indigo-50/40 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-indigo-50 dark:border-slate-800 flex items-center justify-between mb-4">
+                <div class="min-w-0 pr-4">
+                    <p class="text-[9px] font-black text-indigo-400/80 uppercase tracking-widest mb-1">Target Exhibition</p>
+                    <p class="font-black text-slate-800 dark:text-slate-200 text-[13px] line-clamp-1 leading-tight">{{ booking.exhibition.title }}</p>
+                </div>
+                <div class="flex flex-col items-end flex-shrink-0 border-l border-indigo-100/50 dark:border-slate-700 pl-4">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                    <p class="text-[15px] font-black text-indigo-600 dark:text-indigo-400 leading-none">₹{{ booking.total_price }}</p>
+                </div>
+            </div>
+
+            <!-- Secondary Actions -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Time Log</p>
+                    <p class="text-[12px] font-black text-slate-800 dark:text-slate-200">{{ booking.created_at|date:"M d, Y" }}</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {% if booking.student_id_proof %}
+                        <button onclick="viewStudentID('{{ booking.student_id_proof.url }}')" class="h-9 px-4 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100 flex items-center justify-center gap-1.5 transition-all">
+                            ID
+                        </button>
+                    {% endif %}
+
+                    {% if booking.booking_type == 'stall' %}
+                        <button onclick="toggleDetails('{{ booking.id }}')" id="btn-mobile-{{ booking.id }}" class="h-9 px-4 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-indigo-100 dark:shadow-none">
+                            <span class="material-symbols-outlined" style="font-size: 14px;" id="icon-mobile-{{ booking.id }}">visibility</span>
+                            Audit
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mobile Details Block -->
+            {% if booking.booking_type == 'stall' %}
+            <div id="details-mobile-{{ booking.id }}" class="hidden mt-5 pt-5 border-t border-dashed border-slate-200 dark:border-slate-800 space-y-4" style="opacity:0; transition: opacity 0.3s ease;">
+                <div class="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">business</span> Operating Entity</p>
+                    <p class="text-[14px] font-black text-slate-900 dark:text-white mb-2">{{ booking.company_name|default:"Independent" }}</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-bold text-slate-500">{{ booking.representative_name|default:booking.user.username }}</p>
+                        <p class="text-xs font-bold text-slate-500">{{ booking.contact_number|default:"N/A" }}</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <div class="bg-indigo-50/50 dark:bg-indigo-900/10 p-3.5 rounded-xl border border-indigo-100 dark:border-indigo-800 flex-1">
+                        <p class="text-[8.5px] font-black text-indigo-400 uppercase tracking-widest mb-1">Hardware ID</p>
+                        <p class="text-[14px] font-black text-indigo-600 dark:text-indigo-400 line-height-1">#{{ booking.stall_instance.stall_number|default:"TBD" }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 flex-1">
+                        <p class="text-[8.5px] font-black text-slate-400 uppercase tracking-widest mb-1">Dimensions</p>
+                        <p class="text-[14px] font-black text-slate-700 dark:text-slate-300 line-height-1">{{ booking.stall_instance.dimensions|default:"3x3m" }}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px]">room_service</span> Configuration</p>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center border {% if booking.has_wifi %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                            <span class="material-symbols-outlined text-[16px]">wifi</span>
+                        </div>
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center border {% if booking.has_extra_chairs %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                            <span class="material-symbols-outlined text-[16px]">chair</span>
+                        </div>
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center border {% if booking.has_spotlight %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                            <span class="material-symbols-outlined text-[16px]">lightbulb</span>
+                        </div>
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center border {% if booking.has_tv_display %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                            <span class="material-symbols-outlined text-[16px]">tv</span>
+                        </div>
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center border {% if booking.has_power_strip %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                            <span class="material-symbols-outlined text-[16px]">power</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+    {% empty %}
+    <div class="py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Database Empty</p>
+    </div>
+    {% endfor %}
+</div>

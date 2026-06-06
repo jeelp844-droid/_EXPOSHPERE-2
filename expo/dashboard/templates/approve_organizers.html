@@ -1,0 +1,169 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 md:mb-8">
+    <div>
+        <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">Organizer Requests</h2>
+        <p class="text-sm text-slate-500 mt-1">Review and approve new organizer account requests.</p>
+    </div>
+</div>
+
+<!-- Desktop Table -->
+<div class="hidden md:block bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                    <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Partner Info</th>
+                    <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Contact Metadata</th>
+                    <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Request Type</th>
+                    <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Current Status</th>
+                    <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for org in organizers %}
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+                    <td class="px-6 py-5">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <img src="https://ui-avatars.com/api/?name={{ org.full_name }}&background=f1f5f9&color=64748b&bold=true" alt="">
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-slate-900 dark:text-white truncate">{{ org.full_name }}</p>
+                                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5">@{{ org.username }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-5">
+                        <div class="flex flex-col gap-1.5">
+                            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm text-slate-300">mail</span>{{ org.email }}
+                            </p>
+                            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm text-slate-300">call</span>{{ org.mobile }}
+                            </p>
+                        </div>
+                    </td>
+                    <td class="px-6 py-5">
+                        {% if org.role_upgrade_pending %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span class="material-symbols-outlined text-xs">upgrade</span> Role Upgrade
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                <span class="material-symbols-outlined text-xs">person_add</span> New Signup
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-5">
+                        {% if org.is_approved and not org.role_upgrade_pending %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                <span class="w-1 h-1 rounded-full bg-green-500"></span> Approved
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+                                <span class="w-1 h-1 rounded-full bg-amber-500"></span> Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-5 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            {% if not org.is_approved or org.role_upgrade_pending %}
+                                <a href="{% url 'approve_organizer' org.id %}" class="h-9 px-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black rounded-xl hover:opacity-90 transition-all flex items-center shadow-lg shadow-black/5">Approve</a>
+                                <a href="{% url 'reject_organizer' org.id %}" 
+                                   onclick="return confirm('{% if org.role_upgrade_pending %}Reject this upgrade?{% else %}Reject and delete?{% endif %}')" 
+                                   class="h-9 px-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-black rounded-xl hover:bg-slate-50 transition-all flex items-center">Reject</a>
+                            {% else %}
+                                <a href="{% url 'delete_user' org.id %}" onclick="return confirm('IMPORTANT: Permanently remove this account?')" 
+                                   class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all">
+                                    <span class="material-symbols-outlined">person_remove</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-20 text-center">
+                        <div class="max-w-xs mx-auto">
+                            <span class="material-symbols-outlined text-5xl text-slate-200 mb-4 block">groups_3</span>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">All Clear!</h3>
+                            <p class="text-sm text-slate-400 mt-1">No pending organizer requests found.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Mobile Gold-Standard Cards -->
+<div class="md:hidden space-y-4">
+    {% for org in organizers %}
+    <div class="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm p-6 transition-all active:scale-[0.98]">
+        <div class="flex items-center gap-4 mb-5">
+            <div class="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700">
+                <img src="https://ui-avatars.com/api/?name={{ org.full_name }}&background=f1f5f9&color=64748b&bold=true" alt="">
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-black text-slate-900 dark:text-white truncate">{{ org.full_name }}</p>
+                <div class="flex items-center justify-between gap-2 mt-0.5">
+                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest truncate">@{{ org.username }}</p>
+                    {% if org.is_approved and not org.role_upgrade_pending %}
+                        <span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                    {% else %}
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-3 mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+            <div class="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+                <span class="material-symbols-outlined text-sm text-slate-300">mail</span>
+                <span class="font-bold truncate">{{ org.email }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+                <span class="material-symbols-outlined text-sm text-slate-300">call</span>
+                <span class="font-bold">{{ org.mobile }}</span>
+            </div>
+            <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span class="material-symbols-outlined text-sm">info</span>
+                {% if org.role_upgrade_pending %}Role Upgrade Request{% else %}New Account Signup{% endif %}
+            </div>
+        </div>
+
+        {% if not org.is_approved or org.role_upgrade_pending %}
+        <div class="grid grid-cols-2 gap-3">
+            <a href="{% url 'approve_organizer' org.id %}" class="flex items-center justify-center py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black rounded-2xl shadow-xl shadow-slate-200 dark:shadow-none transition-all">
+                Approve Request
+            </a>
+            <a href="{% url 'reject_organizer' org.id %}" onclick="return confirm('Reject this request?')" class="flex items-center justify-center py-3.5 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-black rounded-2xl transition-all">
+                Reject
+            </a>
+        </div>
+        {% else %}
+        <div class="flex items-center justify-between gap-4">
+             <span class="px-3 py-1.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 border border-green-100">
+                <span class="material-symbols-outlined text-sm">verified</span> Active Partner
+            </span>
+            <a href="{% url 'delete_user' org.id %}" onclick="return confirm('Permanently remove this organizer?')" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-red-50 text-red-500 transition-all">
+                <span class="material-symbols-outlined">person_remove</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="py-20 text-center bg-slate-50 dark:bg-slate-900 rounded-[2rem] border-2 border-dashed border-slate-100 dark:border-slate-800">
+        <span class="material-symbols-outlined text-6xl text-slate-200 mb-4 block">person_search</span>
+        <h4 class="text-base font-bold text-slate-900 dark:text-white">No requests found</h4>
+        <p class="text-xs text-slate-400 mt-1">Check back later for new partner signups.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

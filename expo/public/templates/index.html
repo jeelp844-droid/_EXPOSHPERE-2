@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contact %}
+
+<main class="bg-slate-50 dark:bg-slate-950 font-display min-h-screen">
+
+    <!-- Hero Section -->
+    <section class="relative pt-16 sm:pt-24 pb-20 sm:pb-32 overflow-hidden">
+
+        <!-- Background Accents -->
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-0 right-0 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-blue-600/5 rounded-full blur-[80px] sm:blur-[120px] -translate-y-1/2 translate-x-1/2 animate-[float_6s_ease-in-out_infinite]"></div>
+            <div class="absolute bottom-0 left-0 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-indigo-500/5 rounded-full blur-[60px] sm:blur-[80px] translate-y-1/2 -translate-x-1/2 animate-[float_8s_ease-in-out_2s_infinite]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-5 sm:mb-8 leading-tight" data-aos="fade-up">
+                    Discover Global <span class="text-blue-600 italic">Exhibitions</span>
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-slate-500 dark:text-slate-400 mb-8 sm:mb-12 leading-relaxed max-w-2xl mx-auto px-2" data-aos="fade-up" data-aos-delay="100">
+                    Connect with exhibitions worldwide. Book tickets, reserve stalls, and explore opportunities across industries and continents.
+                </p>
+
+                <!-- Search & Action Buttons -->
+                <form action="{% url 'exhibition' %}" method="GET" class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-20 px-2 sm:px-4" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="relative w-full max-w-md group">
+                        <span class="material-symbols-outlined absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors text-xl">search</span>
+                        <input type="text" name="search" placeholder="Explore Exhibitions"
+                               class="w-full pl-12 sm:pl-14 pr-4 sm:pr-6 py-3.5 sm:py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600/20 transition-all outline-none shadow-xl shadow-slate-100 dark:shadow-none text-sm font-bold">
+                    </div>
+                    <button type="submit" class="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-full transition-all shadow-xl shrink-0 text-sm tracking-tight border-none">
+                        Get Started
+                    </button>
+                </form>
+
+                <!-- Statistics Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 max-w-5xl mx-auto">
+
+                    <!-- Countries -->
+                    <div class="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="0">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-3 sm:mb-4">
+                            <span class="material-symbols-outlined text-xl sm:text-2xl">public</span>
+                        </div>
+                        <h4 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{{ country_count|default:"50" }}+<br class="sm:hidden"> <span class="text-base sm:text-2xl">Countries</span></h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Global reach</p>
+                    </div>
+
+                    <!-- Events -->
+                    <div class="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="100">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 mb-3 sm:mb-4">
+                            <span class="material-symbols-outlined text-xl sm:text-2xl">calendar_today</span>
+                        </div>
+                        <h4 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{{ exhibition_count|default:"500" }}+<br class="sm:hidden"> <span class="text-base sm:text-2xl">Events</span></h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Annual exhibitions</p>
+                    </div>
+
+                    <!-- Visitors -->
+                    <div class="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="200">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 mb-3 sm:mb-4">
+                            <span class="material-symbols-outlined text-xl sm:text-2xl">groups</span>
+                        </div>
+                        <h4 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">1M+<br class="sm:hidden"> <span class="text-base sm:text-2xl">Visitors</span></h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Active participants</p>
+                    </div>
+
+                    <!-- Organizers -->
+                    <div class="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="300">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 mb-3 sm:mb-4">
+                            <span class="material-symbols-outlined text-xl sm:text-2xl">trending_up</span>
+                        </div>
+                        <h4 class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{{ organizer_count|default:"10K" }}+<br class="sm:hidden"> <span class="text-base sm:text-2xl">Organizers</span></h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Trusted partners</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upcoming Exhibitions Section -->
+    <section class="py-16 sm:py-24 bg-white dark:bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-10 sm:mb-16">
+                <div data-aos="fade-right">
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-3 sm:mb-4">Upcoming Exhibitions</h2>
+                    <div class="h-1.5 w-16 sm:w-24 bg-blue-600 rounded-full"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+                {% for ex in upcoming_exhibitions %}
+                <div class="group bg-white dark:bg-slate-900 rounded-3xl sm:rounded-[2.5rem] hover:rounded-none border border-slate-100 dark:border-slate-800 overflow-hidden transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:hover:shadow-none hover:-translate-y-2" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:forloop.counter0|add:forloop.counter0 }}00">
+
+                    <!-- Image Area -->
+                    <div class="relative h-48 sm:h-64 overflow-hidden">
+                        {% if ex.image %}
+                        <img src="{{ ex.image.url }}" alt="{{ ex.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        {% else %}
+                        <div class="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-4xl text-slate-300">image</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-5 sm:p-8">
+                        <!-- Title & Status -->
+                        <div class="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                            <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{{ ex.title }}</h3>
+                            {% if ex.dynamic_status == "Ongoing" %}
+                            <span class="px-2.5 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded-lg shrink-0">Ongoing</span>
+                            {% else %}
+                            <span class="px-2.5 py-1 bg-orange-50 text-orange-600 text-[10px] font-bold rounded-lg shrink-0">Upcoming</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Category Pill -->
+                        <div class="mb-4 sm:mb-6">
+                            <span class="px-3 sm:px-4 py-1.5 border border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full">
+                                {{ ex.category.name }}
+                            </span>
+                        </div>
+
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-5 sm:mb-8 line-clamp-2 leading-relaxed">
+                            {{ ex.description|default:"No description available." }}
+                        </p>
+
+                        <!-- Details -->
+                        <div class="space-y-3 sm:space-y-4 mb-5 sm:mb-8">
+                            <div class="flex items-center gap-2 sm:gap-3 text-slate-500 dark:text-slate-400">
+                                <span class="material-symbols-outlined text-lg sm:text-xl opacity-60 shrink-0">location_on</span>
+                                <span class="text-xs font-bold leading-none truncate">{{ ex.city.name }}, {{ ex.country.name }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 text-slate-500 dark:text-slate-400">
+                                <span class="material-symbols-outlined text-lg sm:text-xl opacity-60 shrink-0">calendar_month</span>
+                                <span class="text-xs font-bold leading-none">{{ ex.start_date|date:"d/m/Y" }} - {{ ex.end_date|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 text-slate-500 dark:text-slate-400">
+                                <span class="material-symbols-outlined text-lg sm:text-xl opacity-60 shrink-0">schedule</span>
+                                <span class="text-xs font-bold leading-none">
+                                    {% if ex.start_time %}{{ ex.start_time|time:"h:i A" }}{% else %}10:00 AM{% endif %} -
+                                    {% if ex.end_time %}{{ ex.end_time|time:"h:i A" }}{% else %}07:00 PM{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Price -->
+                        <div class="mb-5 sm:mb-8">
+                            <p class="text-base sm:text-lg font-black text-slate-900 dark:text-white">Ticket: ₹{{ ex.ticket_price|floatformat:0 }}</p>
+                        </div>
+
+                        <a href="{% url 'exhibition_detail' ex.id %}"
+                           class="block w-full text-center py-3.5 sm:py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-xs uppercase tracking-widest rounded-xl sm:rounded-2xl transition-all shadow-xl">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full py-16 sm:py-20 text-center">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl text-slate-300">event_busy</span>
+                    </div>
+                    <p class="text-slate-400 italic text-sm sm:text-base">No upcoming exhibitions at the moment.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-14 sm:mt-20 text-center">
+                <a href="{% url 'exhibition' %}"
+                   class="inline-flex items-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg">
+                    View All Exhibitions
+                    <span class="material-symbols-outlined text-base">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="py-16 sm:py-24 bg-slate-50 dark:bg-slate-950">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10 sm:mb-16" data-aos="fade-up">
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-3 sm:mb-4">Why Choose Us?</h2>
+                <p class="text-slate-500 uppercase tracking-[0.2em] text-[10px] font-black">Global Professional Standards</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-8">
+
+                <!-- Benefit 1 -->
+                <div class="bg-white dark:bg-slate-900/50 p-7 sm:p-10 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800/50 shadow-xl shadow-slate-200/40 dark:shadow-none hover:border-blue-600/30 transition-all group" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 mb-6 sm:mb-8 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">verified</span>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">Verified Organizers</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        All organizers are verified and approved by our admin team for your safety and trust.
+                    </p>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="bg-white dark:bg-slate-900/50 p-7 sm:p-10 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800/50 shadow-xl shadow-slate-200/40 dark:shadow-none hover:border-blue-600/30 transition-all group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 mb-6 sm:mb-8 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">explore</span>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">Easy Discovery</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Search exhibitions by country, city, category, or date with our advanced filters.
+                    </p>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="bg-white dark:bg-slate-900/50 p-7 sm:p-10 rounded-2xl sm:rounded-3xl border border-white dark:border-slate-800/50 shadow-xl shadow-slate-200/40 dark:shadow-none hover:border-blue-600/30 transition-all group sm:col-span-2 md:col-span-1" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 mb-6 sm:mb-8 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-2xl sm:text-3xl">confirmation_number</span>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">Instant Booking</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Book tickets and reserve stalls instantly with our seamless booking system.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{% endblock %}

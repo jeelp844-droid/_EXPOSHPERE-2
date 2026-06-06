@@ -1,0 +1,103 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="w-full max-w-full">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">The Registry</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">A complete overview of all platform participants.</p>
+        </div>
+        <!-- Search -->
+        <form method="GET" action="{% url 'manage_users' %}" class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 shadow-sm w-full sm:w-72 flex-shrink-0">
+            <span class="material-symbols-outlined text-slate-400 text-lg flex-shrink-0">person_search</span>
+            <input type="text" name="search" placeholder="Filter by name or username..." value="{{ search }}"
+                   class="flex-1 min-w-0 bg-transparent outline-none text-sm font-semibold text-slate-700 dark:text-slate-300 placeholder-slate-400">
+            <button type="submit" class="hidden"></button>
+        </form>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-slate-100 dark:border-slate-800 pb-0">
+        <div class="flex gap-4">
+            <a href="?role=All" class="text-sm font-bold pb-3 border-b-2 transition-all {% if role_filter == 'All' %}text-slate-900 dark:text-white border-slate-900 dark:border-white{% else %}text-slate-400 border-transparent hover:text-slate-600{% endif %}">All</a>
+            <a href="?role=Visitor" class="text-sm font-bold pb-3 border-b-2 transition-all {% if role_filter == 'Visitor' %}text-slate-900 dark:text-white border-slate-900 dark:border-white{% else %}text-slate-400 border-transparent hover:text-slate-600{% endif %}">Visitors</a>
+            <a href="?role=Organizer" class="text-sm font-bold pb-3 border-b-2 transition-all {% if role_filter == 'Organizer' %}text-slate-900 dark:text-white border-slate-900 dark:border-white{% else %}text-slate-400 border-transparent hover:text-slate-600{% endif %}">Organizers</a>
+        </div>
+        <span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg uppercase tracking-widest mb-3">{{ users|length }} profiles</span>
+    </div>
+
+    <!-- User Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+        {% for profile in users %}
+        <div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 md:p-5 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 min-w-0">
+            <!-- Top: avatar + name -->
+            <div class="flex items-center gap-3 mb-4">
+                <img src="https://ui-avatars.com/api/?name={{ profile.full_name }}&background=f1f5f9&color=64748b&bold=true" 
+                     alt="{{ profile.full_name }}" class="w-12 h-12 rounded-2xl flex-shrink-0">
+                <div class="min-w-0">
+                    <h3 class="text-base font-black text-slate-900 dark:text-white leading-tight truncate">{{ profile.full_name }}</h3>
+                    <span class="text-sm text-slate-400 font-semibold truncate block">@{{ profile.username }}</span>
+                </div>
+            </div>
+
+            <!-- Mid: info rows -->
+            <div class="border-t border-slate-50 dark:border-slate-800 pt-3 mb-4 space-y-2">
+                <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 min-w-0">
+                    <span class="material-symbols-outlined text-slate-300 text-lg flex-shrink-0">alternate_email</span>
+                    <span class="text-xs font-semibold truncate">{{ profile.email }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                    <span class="material-symbols-outlined text-slate-300 text-lg flex-shrink-0">calendar_today</span>
+                    <span class="text-xs font-semibold">Joined {{ profile.created_at|date:"M Y" }}</span>
+                </div>
+            </div>
+
+            <!-- Bottom: role + actions -->
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase
+                    {% if profile.role == 'Visitor' %}bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400
+                    {% elif profile.role == 'Organizer' %}bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400
+                    {% else %}bg-red-50 text-red-600{% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full {% if profile.role == 'Visitor' %}bg-blue-400{% elif profile.role == 'Organizer' %}bg-purple-400{% else %}bg-red-400{% endif %}"></span>
+                    {{ profile.role }}
+                </span>
+
+                <div class="flex items-center gap-2">
+                    {% if not profile.is_approved or profile.role_upgrade_pending %}
+                    <a href="{% url 'approve_organizer' profile.id %}" class="w-7 h-7 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-100 transition-colors" title="Approve">
+                        <span class="material-symbols-outlined text-lg">check_circle</span>
+                    </a>
+                    <a href="{% url 'reject_organizer' profile.id %}" 
+                       onclick="return confirm('{% if profile.role_upgrade_pending %}Reject this upgrade request?{% else %}Reject and delete this organizer request?{% endif %}')"
+                       class="w-7 h-7 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors" title="Reject">
+                        <span class="material-symbols-outlined text-lg">cancel</span>
+                    </a>
+                    {% endif %}
+                    <button onclick="confirmDelete('{{ profile.id }}', '{{ profile.full_name }}')" 
+                            class="w-7 h-7 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors" title="Remove">
+                        <span class="material-symbols-outlined text-lg">delete_outline</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-16 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3 block">diversity_4</span>
+            <h2 class="text-lg font-bold text-slate-700 dark:text-slate-300">No participants found</h2>
+            <p class="text-slate-400 text-sm mt-1 mb-5">We couldn't find any users matching your current criteria.</p>
+            <a href="{% url 'manage_users' %}" class="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm">View All Users</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function confirmDelete(id, name) {
+    if(confirm(`IMPORTANT: Permanently remove the profile for "${name}"? This will terminate their access and delete their account.`)) {
+        window.location.href = `/dashboard/users/delete/${id}/`;
+    }
+}
+</script>
+{% endblock %}

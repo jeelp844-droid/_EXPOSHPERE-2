@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contact %}
+<main class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+<!-- Hero Section -->
+<div class="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900 mb-10 sm:mb-12 min-h-[250px] sm:min-h-[300px] flex items-center">
+<div class="absolute inset-0 opacity-40" data-alt="Futuristic exhibition hall with blue lighting" style='background-image: linear-gradient(rgba(11, 80, 218, 0.4), rgba(16, 22, 34, 0.9)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2xKlelpj5xwcL39sJ-wpbxvb322Jd5NAiUK_LXF6N-w1x-hytpmBnpxZLFBIc8S_DDq5V9znw4PpesK2FlfgF0B3mBb-rC3P2sd24UJQofDrHAOwVxUatM6cxL8M37pswLNTEztwzmbXOYP0dlmuyBl6WjNCYrFEAVf30GmK3YpZwsIJUKRCOUmGVs_wF6gFxIpMey0mLXUtow-twIfbvdubcRdDLTtGVSwQE2Tue1dV6fcdUYeQNntNWoV4pNAYK5o9M74OCoxs"); background-size: cover; background-position: center;'></div>
+<div class="relative z-10 p-6 sm:p-8 md:p-16 text-white max-w-2xl mx-auto md:mx-0 text-center md:text-left" data-aos="fade-up">
+<span class="inline-block px-3 py-1 bg-primary text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full mb-3 sm:mb-4">Platform Guide</span>
+<h1 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4">A Seamless Global Exhibition Experience</h1>
+<p class="text-sm sm:text-lg text-slate-200">Whether you are visiting, organizing, or managing, ExpoSphere provides the tools to make global events accessible to everyone.</p>
+</div>
+</div>
+
+<!-- Section 1: Visitors -->
+<section class="mb-16 sm:mb-20">
+<div class="flex flex-col sm:flex-row items-center sm:items-center gap-3 mb-6 sm:mb-8" data-aos="fade-right">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">group</span>
+</div>
+<h2 class="text-2xl font-bold text-center sm:text-left">For Visitors</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+<!-- Step 1 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="0">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">search</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Search</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Discover upcoming global exhibitions by category, location, or date.</p>
+</div>
+<!-- Step 2 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="100">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">person_add</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Register</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Quickly set up your personal profile to tailor your interests and get updates.</p>
+</div>
+<!-- Step 3 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="200">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">confirmation_number</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Book Tickets</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Choose your preferred dates and secure your spot with easy online payments.</p>
+</div>
+<!-- Step 4 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="300">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">qr_code_2</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Download Pass</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Get your digital QR entry pass instantly on your mobile device or email.</p>
+</div>
+</div>
+</section>
+
+<!-- Section 2: Organizers -->
+<section class="mb-16 sm:mb-20">
+<div class="flex flex-col sm:flex-row items-center sm:items-center gap-3 mb-6 sm:mb-8" data-aos="fade-right">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">event</span>
+</div>
+<h2 class="text-2xl font-bold text-center sm:text-left">For Organizers</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+<!-- Step 1 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="0">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">app_registration</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Register</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Verify your company profile and gain access to the dashboard.</p>
+</div>
+<!-- Step 2 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="100">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">add_circle</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Create Exhibition</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Set up event details, upload floor plans, and define ticket types.</p>
+</div>
+<!-- Step 3 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="200">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">grid_view</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">Manage Stalls</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Assign stalls to exhibitors and track layout availability in real-time.</p>
+</div>
+<!-- Step 4 -->
+<div class="group p-5 sm:p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 transition-all shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left" data-aos="fade-up" data-aos-delay="300">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary mb-3 sm:mb-4 group-hover:bg-primary group-hover:text-white transition-all">
+<span class="material-symbols-outlined text-xl sm:text-2xl">analytics</span>
+</div>
+<h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2">View Registrations</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Monitor visitor signups and generate insightful demographic reports.</p>
+</div>
+</div>
+</section>
+
+<!-- Section 3: Admins -->
+<section class="mb-10 sm:mb-20">
+<div class="flex flex-col sm:flex-row items-center sm:items-center gap-3 mb-6 sm:mb-8" data-aos="fade-right">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<h2 class="text-2xl font-bold text-center sm:text-left">For Admins</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+<!-- Step 1 -->
+<div class="flex flex-col sm:flex-row gap-4 sm:gap-5 p-6 sm:p-8 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/20 text-center sm:text-left" data-aos="fade-up" data-aos-delay="0">
+<div class="shrink-0 size-14 rounded-xl bg-primary text-white flex items-center justify-center mx-auto sm:mx-0">
+<span class="material-symbols-outlined text-2xl sm:text-3xl">verified_user</span>
+</div>
+<div>
+<h3 class="text-lg sm:text-xl font-bold mb-1.5 sm:mb-2">Approve Requests</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Review and validate organizer applications to maintain platform quality.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col sm:flex-row gap-4 sm:gap-5 p-6 sm:p-8 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/20 text-center sm:text-left" data-aos="fade-up" data-aos-delay="100">
+<div class="shrink-0 size-14 rounded-xl bg-primary text-white flex items-center justify-center mx-auto sm:mx-0">
+<span class="material-symbols-outlined text-2xl sm:text-3xl">settings_applications</span>
+</div>
+<div>
+<h3 class="text-lg sm:text-xl font-bold mb-1.5 sm:mb-2">Manage System</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Configure global settings, user roles, and system-wide notifications.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col sm:flex-row gap-4 sm:gap-5 p-6 sm:p-8 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/20 text-center sm:text-left" data-aos="fade-up" data-aos-delay="200">
+<div class="shrink-0 size-14 rounded-xl bg-primary text-white flex items-center justify-center mx-auto sm:mx-0">
+<span class="material-symbols-outlined text-2xl sm:text-3xl">monitoring</span>
+</div>
+<div>
+<h3 class="text-lg sm:text-xl font-bold mb-1.5 sm:mb-2">View Analytics</h3>
+<p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Access comprehensive dashboard for platform-wide performance tracking.</p>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+{% endblock %}

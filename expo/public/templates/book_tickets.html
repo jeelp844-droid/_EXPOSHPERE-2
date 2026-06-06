@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contact %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Outfit', sans-serif; }
+
+    /* Loader animation (not replaceable with Tailwind alone) */
+    @keyframes loader-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .7; }
+    }
+    .loader-spinner {
+        width: 60px;
+        height: 60px;
+        border: 5px solid #f3f4f6;
+        border-top: 5px solid #2563eb;
+        border-radius: 50%;
+        animation: loader-spin 1s linear infinite;
+    }
+    @media (min-width: 640px) {
+        .loader-spinner {
+            width: 80px;
+            height: 80px;
+            border-width: 6px;
+        }
+    }
+    .loading-text {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Qty display fix */
+    .qty-display { color: #000000 !important; }
+
+    /* Checkout button hover/transform */
+    .btn-checkout:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3);
+    }
+    .btn-checkout { transition: transform 0.2s; }
+
+    /* Ticket card active state */
+    .ticket-type-card.active {
+        border-color: #2563eb;
+        background: #eff6ff;
+    }
+</style>
+
+<div class="max-w-6xl mx-auto mt-6 sm:mt-16 px-4 sm:px-6 mb-10 sm:mb-16">
+
+    <!-- Processing Loader Overlay -->
+    <div id="booking-loader" class="hidden fixed inset-0 z-[10000] flex-col items-center justify-center text-center px-4"
+         style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+        <div class="loader-spinner mb-4 sm:mb-6"></div>
+        <h2 class="loading-text text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">Processing Your Booking...</h2>
+        <p class="text-sm sm:text-base text-slate-500 font-medium">Securely finalizing your tickets. Please do not close this window.</p>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mb-4 sm:mb-6">
+        <a href="{% url 'exhibition_detail' exhibition.id %}"
+           class="inline-flex items-center gap-2 text-blue-600 no-underline font-bold text-xs sm:text-sm transition-colors hover:text-blue-800">
+            <i class="fas fa-arrow-left"></i> Back to Exhibition Detail
+        </a>
+    </div>
+
+    <!-- Header Section -->
+    <div class="mb-8 sm:mb-12 text-center lg:text-left">
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-gray-900 mb-2 sm:mb-3">Book Your Tickets</h1>
+        <p class="text-sm sm:text-lg text-slate-500">Join us for an unforgettable experience at ExpoSphere.</p>
+    </div>
+
+    <form method="POST" id="bookingForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Responsive Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-6 sm:gap-10">
+
+            <!-- LEFT COLUMN -->
+            <div>
+                <div class="bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                    {% if exhibition.image %}
+                        <img src="{{ exhibition.image.url }}" class="w-full h-48 sm:h-72 object-cover" alt="Exhibition Image">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1540575861501-7ad060e39fe5?auto=format&fit=crop&q=80&w=1200"
+                             class="w-full h-48 sm:h-72 object-cover" alt="Exhibition">
+                    {% endif %}
+
+                    <div class="p-5 sm:p-8">
+                        <span class="inline-block px-3 sm:px-3.5 py-1 sm:py-1.5 bg-blue-50 text-blue-600 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-wide mb-3 sm:mb-4">Featured Event</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 text-gray-900">{{ exhibition.title }}</h2>
+
+                        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-slate-500 font-medium text-sm sm:text-base">
+                            <i class="fas fa-calendar-alt w-5 text-blue-600"></i>
+                            <span>{{ exhibition.start_date|date:"F d" }} - {{ exhibition.end_date|date:"F d, Y" }}</span>
+                        </div>
+                        {% if exhibition.start_time %}
+                        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-slate-500 font-medium text-sm sm:text-base">
+                            <i class="fas fa-clock w-5 text-blue-600"></i>
+                            <span>{{ exhibition.start_time|time:"h:i A" }} - {{ exhibition.end_time|time:"h:i A" }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-slate-500 font-medium text-sm sm:text-base">
+                            <i class="fas fa-map-marker-alt w-5 text-blue-600"></i>
+                            <span>{{ exhibition.venue }}, {{ exhibition.city.name }}</span>
+                        </div>
+
+                        <div class="mt-6 sm:mt-8 h-px bg-slate-100"></div>
+
+                        <div class="mt-6 sm:mt-8">
+                            <h4 class="mb-2 sm:mb-3 font-extrabold text-sm sm:text-base">Exhibition Summary</h4>
+                            <p class="text-slate-500 leading-relaxed text-xs sm:text-sm">
+                                {{ exhibition.description|truncatewords:40 }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div>
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-10 border border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+                    <h2 class="mb-6 sm:mb-8 font-extrabold flex justify-between items-center text-lg sm:text-xl text-gray-900">
+                        Select Ticket Type
+                        <span class="text-[10px] sm:text-xs bg-orange-50 text-orange-400 px-2 sm:px-2.5 py-1 rounded-md sm:rounded-lg">
+                            <i class="fas fa-bolt"></i> Selling Fast
+                        </span>
+                    </h2>
+
+                    <!-- Student Tier -->
+                    <div class="ticket-type-card border-2 border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-5 transition-all duration-300 relative">
+                        <div class="absolute -top-3 left-4 sm:left-6 bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[11px] font-extrabold uppercase shadow-sm">Student</div>
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
+                            <div>
+                                <h3 class="text-base sm:text-xl font-bold m-0 leading-none mt-2 sm:mt-0">Student Access</h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-1 sm:mt-1.5 hidden sm:block">Exclusive discount for verified students.</p>
+                                <div class="mt-2 text-xs sm:text-sm text-emerald-500 font-semibold">
+                                    <i class="fas fa-check-circle"></i> Full access
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg sm:text-2xl font-extrabold text-blue-600 mt-2 sm:mt-0">₹{{ student_price|floatformat:0 }}</div>
+                                <div class="flex items-center gap-2 flex-nowrap bg-slate-100 p-1 rounded-lg sm:rounded-xl mt-2 sm:mt-4">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('student', -1)">-</button>
+                                    <span id="student_qty_display" class="qty-display w-6 sm:w-10 text-center font-extrabold text-sm sm:text-xl inline-block mx-1 leading-6 sm:leading-8">0</span>
+                                    <input type="hidden" name="student_qty" id="student_qty" value="0">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('student', 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Standard Entry -->
+                    <div class="ticket-type-card border-2 border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-5 transition-all duration-300 relative">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
+                            <div>
+                                <h3 class="text-base sm:text-xl font-bold m-0 leading-none">Standard Entry</h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-1 sm:mt-1.5 hidden sm:block">General admission for all event halls.</p>
+                                <div class="mt-2 text-xs sm:text-sm text-slate-500 font-semibold">
+                                    <i class="fas fa-check-circle text-emerald-500"></i> Daily access
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg sm:text-2xl font-extrabold text-blue-600">₹{{ standard_price|floatformat:0 }}</div>
+                                <div class="flex items-center gap-2 flex-nowrap bg-slate-100 p-1 rounded-lg sm:rounded-xl mt-2 sm:mt-4">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('standard', -1)">-</button>
+                                    <span id="standard_qty_display" class="qty-display w-6 sm:w-10 text-center font-extrabold text-sm sm:text-xl inline-block mx-1 leading-6 sm:leading-8">0</span>
+                                    <input type="hidden" name="standard_qty" id="standard_qty" value="0">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('standard', 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIP Premiere -->
+                    <div class="ticket-type-card border-2 border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-5 transition-all duration-300 relative">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
+                            <div>
+                                <h3 class="text-base sm:text-xl font-bold m-0 leading-none flex flex-wrap gap-1 items-center">
+                                    VIP Premiere
+                                    <span class="text-[8px] sm:text-[10px] text-red-500 bg-red-50 px-1 rounded">LIMITED EDITION</span>
+                                </h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-1 sm:mt-1.5 hidden sm:block">The ultimate experience with exclusive benefits.</p>
+                                <div class="mt-2 text-xs sm:text-sm text-slate-500 font-semibold">
+                                    <i class="fas fa-check-circle text-emerald-500"></i> VIP Lounge
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg sm:text-2xl font-extrabold text-blue-600">₹{{ vip_price|floatformat:0 }}</div>
+                                <div class="flex items-center gap-2 flex-nowrap bg-slate-100 p-1 rounded-lg sm:rounded-xl mt-2 sm:mt-4">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('vip', -1)">-</button>
+                                    <span id="vip_qty_display" class="qty-display w-6 sm:w-10 text-center font-extrabold text-sm sm:text-xl inline-block mx-1 leading-6 sm:leading-8">0</span>
+                                    <input type="hidden" name="vip_qty" id="vip_qty" value="0">
+                                    <button type="button" class="qty-btn w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-xl border-none bg-white font-bold cursor-pointer flex items-center justify-center text-xs sm:text-base" onclick="updateQty('vip', 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student ID Upload -->
+                    <div id="student_id_section" class="hidden border-2 border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-5 bg-white">
+                        <h3 class="text-base sm:text-lg font-bold mb-1.5 sm:mb-2"><i class="fas fa-id-card text-blue-600 mr-1.5 sm:mr-2"></i> Student ID Proof</h3>
+                        <p class="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">Please upload a valid student ID card to process the discount.</p>
+                        <input type="file" name="student_id_proof" id="student_id_proof" accept="image/*,.pdf"
+                               class="w-full p-2.5 sm:p-3 rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 outline-none text-xs sm:text-sm">
+                    </div>
+
+                    <!-- Summary + Checkout -->
+                    <div class="border-t border-slate-200 pt-5 sm:pt-6 mt-5 sm:mt-6">
+                        <div class="flex justify-between mb-2 text-xs sm:text-sm text-slate-500 font-medium">
+                            <span>Subtotal</span>
+                            <span id="subtotalDisplay">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-6 sm:mb-8">
+                            <span class="text-xs sm:text-sm text-gray-900 font-bold uppercase">Total</span>
+                            <span id="totalPriceDisplay" class="text-2xl sm:text-4xl font-extrabold text-gray-900 transition-transform duration-100">₹0.00</span>
+                        </div>
+
+                        {% if available_tickets > 0 %}
+                            {% if user.is_authenticated %}
+                                <button type="button" id="pay-button"
+                                        class="btn-checkout w-full bg-blue-600 text-white py-3.5 sm:py-4 px-6 sm:px-12 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold border-none cursor-pointer no-underline block text-center">
+                                    Checkout Now
+                                </button>
+                            {% else %}
+                                <button type="button" onclick="showLoginAlert()"
+                                        class="btn-checkout w-full bg-blue-600 text-white py-3.5 sm:py-4 px-6 sm:px-12 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold border-none cursor-pointer block text-center">
+                                    Checkout Now
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <button type="button"
+                                    class="w-full bg-slate-400 text-white py-3.5 sm:py-4 px-6 sm:px-12 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold border-none cursor-not-allowed block text-center"
+                                    onclick="showPopup('error', 'Sold Out', 'Sorry, all tickets have been sold.')">
+                                Sold Out
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <p class="text-center mt-4 sm:mt-6 text-[10px] sm:text-[11px] text-slate-500 px-4">
+                    By clicking Checkout, you agree to our
+                    <a href="#" class="text-gray-900 font-semibold no-underline hover:underline">Terms</a> and
+                    <a href="#" class="text-gray-900 font-semibold no-underline hover:underline">Privacy</a>.
+                </p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Status Popup -->
+<div id="statusPopup" class="fixed inset-0 z-[2000] px-4 items-center justify-center"
+     style="display: {% if available_tickets <= 0 %}flex{% else %}none{% endif %}; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-2xl text-center max-w-sm w-full relative transform scale-100 transition-transform">
+        <div id="popupIcon" class="text-5xl sm:text-6xl mb-4 sm:mb-6">{% if available_tickets <= 0 %}⚠️{% endif %}</div>
+        <h2 id="popupTitle" class="text-xl sm:text-2xl font-extrabold mb-2 sm:mb-3 text-red-500">{% if available_tickets <= 0 %}Sold Out{% endif %}</h2>
+        <p id="popupMessage" class="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8 leading-relaxed">{% if available_tickets <= 0 %}Sorry, all tickets for this exhibition have been sold.{% endif %}</p>
+        <button onclick="closeStatusPopup()" id="popupCloseBtn"
+                class="btn-checkout w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold border-none cursor-pointer transition">
+            {% if available_tickets <= 0 %}Return to Details{% else %}Close{% endif %}
+        </button>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    function closeStatusPopup() {
+        document.getElementById('statusPopup').style.display = 'none';
+        {% if available_tickets <= 0 %}
+        window.location.href = "{% url 'exhibition_detail' exhibition.id %}";
+        {% endif %}
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const paymentForm = document.getElementById('bookingForm');
+        const payButton = document.getElementById('pay-button');
+
+        if (payButton) {
+            payButton.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const studentQty = parseInt(document.getElementById('student_qty').value);
+                const standardQty = parseInt(document.getElementById('standard_qty').value);
+                const vipQty = parseInt(document.getElementById('vip_qty').value);
+                const totalRequested = studentQty + standardQty + vipQty;
+
+                if (totalRequested <= 0) {
+                    alert("Please select at least one ticket.");
+                    return;
+                }
+
+                if (studentQty > 0 && !document.getElementById('student_id_proof').value) {
+                    alert('Please upload a valid Student ID proof before checking out.');
+                    return;
+                }
+
+                const subtotal = (studentQty * prices.student) + (standardQty * prices.standard) + (vipQty * prices.vip);
+                const totalAmount = Math.round(subtotal * 100);
+
+                if (totalAmount === 0) {
+                    document.getElementById('booking-loader').style.display = 'flex';
+                    paymentForm.submit();
+                    return;
+                }
+
+                const options = {
+                    key: "rzp_test_bilBagOBVTi4lE",
+                    amount: totalAmount,
+                    currency: "INR",
+                    name: "ExpoSphere",
+                    description: `Booking for {{ exhibition.title }}`,
+                    handler: function (response) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'razorpay_payment_id';
+                        input.value = response.razorpay_payment_id;
+                        paymentForm.appendChild(input);
+
+                        document.getElementById('booking-loader').style.display = 'flex';
+
+                        paymentForm.submit();
+                    },
+                    prefill: {
+                        name: "{{ request.user.first_name }} {{ request.user.last_name }}",
+                        email: "{{ request.user.email }}",
+                        contact: ""
+                    },
+                    theme: { color: "#2563eb" }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+            });
+        }
+    });
+
+    function showPopup(type, title, message) {
+        const popup = document.getElementById('statusPopup');
+        const icon = document.getElementById('popupIcon');
+        const titleEl = document.getElementById('popupTitle');
+        const msgEl = document.getElementById('popupMessage');
+
+        if (type === 'success') {
+            icon.innerHTML = '✅';
+            titleEl.className = 'text-xl sm:text-2xl font-extrabold mb-2 sm:mb-3 text-emerald-500';
+        } else {
+            icon.innerHTML = '⚠️';
+            titleEl.className = 'text-xl sm:text-2xl font-extrabold mb-2 sm:mb-3 text-red-500';
+        }
+
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        document.getElementById('popupCloseBtn').innerText = 'Close';
+        popup.style.display = 'flex';
+    }
+
+    const prices = {
+        student: parseFloat("{{ student_price|default:0|floatformat:2 }}"),
+        standard: parseFloat("{{ standard_price|default:0|floatformat:2 }}"),
+        vip: parseFloat("{{ vip_price|default:0|floatformat:2 }}")
+    };
+
+    function updateQty(type, delta) {
+        const input = document.getElementById(type + '_qty');
+        const display = document.getElementById(type + '_qty_display');
+
+        const studentQty = parseInt(document.getElementById('student_qty').value);
+        const standardQty = parseInt(document.getElementById('standard_qty').value);
+        const vipQty = parseInt(document.getElementById('vip_qty').value);
+        const currentTotal = studentQty + standardQty + vipQty;
+        const available = {{ available_tickets }};
+
+        if (delta > 0 && currentTotal >= available) {
+            showPopup('error', 'Limit Reached', 'Only ' + available + ' tickets are available.');
+            return;
+        }
+
+        let val = parseInt(input.value) + delta;
+        if (val < 0) val = 0;
+        input.value = val;
+        display.innerText = val;
+
+        const card = input.closest('.ticket-type-card');
+        if (val > 0) card.classList.add('active');
+        else card.classList.remove('active');
+
+        const studentQtyInput = parseInt(document.getElementById('student_qty').value);
+        const idSection = document.getElementById('student_id_section');
+        const idInput = document.getElementById('student_id_proof');
+        if (studentQtyInput > 0) {
+            idSection.style.display = 'block';
+            idInput.required = true;
+        } else {
+            idSection.style.display = 'none';
+            idInput.required = false;
+        }
+
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        const studentQty = parseInt(document.getElementById('student_qty').value);
+        const standardQty = parseInt(document.getElementById('standard_qty').value);
+        const vipQty = parseInt(document.getElementById('vip_qty').value);
+
+        const subtotal = (studentQty * prices.student) + (standardQty * prices.standard) + (vipQty * prices.vip);
+        const total = subtotal;
+
+        document.getElementById('subtotalDisplay').innerText = '₹' + subtotal.toFixed(2);
+        const display = document.getElementById('totalPriceDisplay');
+        display.innerText = '₹' + total.toFixed(2);
+
+        display.style.transform = 'scale(1.1)';
+        setTimeout(() => display.style.transform = 'scale(1)', 100);
+    }
+
+    function showLoginAlert() {
+        alert("Please login to book tickets.");
+        window.location.href = "{% url 'delogin' %}";
+    }
+
+    window.onload = function () {
+        calculateTotal();
+    };
+</script>
+{% endblock %}

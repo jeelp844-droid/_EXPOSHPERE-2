@@ -1,0 +1,386 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
+    .saas-container {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafc;
+        min-height: 100vh;
+    }
+    
+    .saas-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .saas-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .progress-track { background: #f1f5f9; border-radius: 9999px; height: 8px; overflow: hidden; }
+    .progress-fill { background: #3b82f6; height: 100%; border-radius: 9999px; }
+    
+    /* Input styles */
+    .saas-input {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #64748b;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .saas-input:focus { border-color: #cbd5e1; }
+</style>
+
+<div class="saas-container p-6 lg:p-10 space-y-6">
+
+    <!-- Top Navigation / Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6 mb-2 mt-4">
+        <h1 class="saas-title m-0">Reports & Analytics</h1>
+    </div>
+
+
+    <!-- 4 KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+        <div class="saas-card p-6 border-l-4 border-l-blue-100 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">payments</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Live
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
+                <h3 id="rep-rev-stat" class="text-[28px] font-black text-slate-900 m-0 tracking-tight">₹{{ total_revenue|floatformat:"0" }}</h3>
+            </div>
+        </div>
+
+        <!-- Registrations -->
+        <div class="saas-card p-6 border-l-4 border-l-blue-100 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+                    </div>
+                    <div class="flex items-center text-emerald-500 text-[11px] font-bold">
+                        <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +8.2%
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Registrations</p>
+                <h3 id="rep-user-stat" class="text-[28px] font-black text-slate-900 m-0 tracking-tight">{{ total_users }}</h3>
+            </div>
+        </div>
+
+        <!-- Exhibitions -->
+        <div class="saas-card p-6 border-l-4 border-l-purple-100 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">explore</span>
+                    </div>
+                    <div class="flex items-center text-emerald-500 text-[11px] font-bold">
+                        <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +4.1%
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Active Exhibitions</p>
+                <h3 id="rep-event-stat" class="text-[28px] font-black text-slate-900 m-0 tracking-tight">{{ approved_exhibitions }}</h3>
+            </div>
+        </div>
+
+        <!-- New Organizers -->
+        <div class="saas-card p-6 border-l-4 border-l-orange-100 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">handshake</span>
+                    </div>
+                    <div class="flex items-center text-emerald-500 text-[11px] font-bold">
+                        <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +15.3%
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">New Organizers</p>
+                <h3 id="rep-org-stat" class="text-[28px] font-black text-slate-900 m-0 tracking-tight">{{ new_organizers }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Charts Row -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Area Chart: Revenue Over Time -->
+        <div class="xl:col-span-2 saas-card p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="saas-title m-0 tracking-tight">Revenue Over Time</h3>
+            </div>
+            <div class="flex-1 w-full min-h-[320px]">
+                <canvas id="revLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Registrations by Category -->
+        <div class="saas-card p-6 xl:col-span-1">
+            <h3 class="saas-title m-0 tracking-tight mb-8">Registrations by Category</h3>
+            <div class="space-y-6">
+                {% for cat in categories %}
+                <div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-700 mb-2">
+                        <span>{{ cat.name }}</span><span>{{ cat.count }}</span>
+                    </div>
+                    <div class="progress-track">
+                        {% widthratio cat.count total_cat_count 100 as w_pct %}
+                        <div class="progress-fill {% if forloop.counter == 1 %}bg-blue-600{% elif forloop.counter == 2 %}bg-blue-500{% elif forloop.counter == 3 %}bg-blue-400{% elif forloop.counter == 4 %}bg-blue-300{% else %}bg-slate-300{% endif %}" style="width: {{ w_pct }}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-[13px] text-slate-500 font-medium">No category data available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Stall Occupancy Status -->
+        <div class="saas-card p-6 xl:col-span-1 flex flex-col items-center">
+            <div class="w-full text-left mb-6">
+                <h3 class="saas-title m-0 tracking-tight">Stall Occupancy Status</h3>
+            </div>
+            
+            <div class="relative w-[240px] h-[240px] flex items-center justify-center">
+                <canvas id="occupancyChart"></canvas>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+                    <span id="occ-badge" class="text-[40px] font-black text-slate-900 tracking-tight leading-none">{% widthratio occupied_stalls total_system_stalls 100 %}%</span>
+                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">OCCUPIED</span>
+                </div>
+            </div>
+            
+            <div class="w-full mt-8 grid grid-cols-2 gap-y-4 text-xs font-semibold text-slate-700">
+                <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div> Occupied ({{ occupied_stalls }})</div>
+                <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-[#3b82f6cc]"></div> Reserved ({{ reserved_stalls }})</div>
+                <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-slate-200"></div> Available ({{ available_stalls }})</div>
+            </div>
+        </div>
+
+        <!-- Top Performing Exhibitions -->
+        <div class="xl:col-span-2 saas-card p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="saas-title m-0 tracking-tight">Top Performing Exhibitions</h3>
+                <a href="#" class="text-[13px] font-bold text-blue-600 hover:text-blue-800 transition-colors">View All</a>
+            </div>
+            
+            <div class="hidden sm:block overflow-x-auto flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Exhibition Name</th>
+                            <th class="py-3 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">Registrations</th>
+                            <th class="py-3 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Revenue</th>
+                            <th class="py-3 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ex in top_exhibitions %}
+                        <tr class="hover:bg-slate-50/70 border-b border-slate-100/50 transition-colors">
+                            <td class="py-5 px-2 text-[13px] font-bold text-slate-800">{{ ex.title }}</td>
+                            <td class="py-5 px-2 text-[13px] font-medium text-slate-600 text-center">{{ ex.registrations_count }}</td>
+                            <td class="py-5 px-2 text-[13px] font-medium text-slate-600">₹{{ ex.total_rev|floatformat:"0"|default:"0" }}</td>
+                            <td class="py-5 px-2">
+                                {% if ex.status == 'approved' %}
+                                    <span class="bg-[#dcfce7] text-[#166534] text-[9px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">ACTIVE</span>
+                                {% elif ex.status == 'pending' %}
+                                    <span class="bg-[#dbeafe] text-[#1e40af] text-[9px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">PLANNED</span>
+                                {% else %}
+                                    <span class="bg-slate-100 text-slate-600 text-[9px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">{{ ex.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-5 px-2 text-[13px] font-medium text-slate-500 text-center">No active exhibition data.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="sm:hidden flex flex-col gap-3 mt-2">
+                {% for ex in top_exhibitions %}
+                <div class="bg-white border text-sm border-slate-100 rounded-xl p-4 shadow-sm flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-slate-800 break-words line-clamp-2 pr-2">{{ ex.title }}</span>
+                        <div class="flex-shrink-0">
+                            {% if ex.status == 'approved' %}
+                                <span class="bg-[#dcfce7] text-[#166534] text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-wider">ACTIVE</span>
+                            {% elif ex.status == 'pending' %}
+                                <span class="bg-[#dbeafe] text-[#1e40af] text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-wider">PLANNED</span>
+                            {% else %}
+                                <span class="bg-slate-100 text-slate-600 text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-wider">{{ ex.status }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 rounded-lg p-2.5">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Registrations</span>
+                            <span class="text-xs font-bold text-slate-700 mt-0.5">{{ ex.registrations_count }} Users</span>
+                        </div>
+                        <div class="flex flex-col text-right">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Revenue</span>
+                            <span class="text-sm font-black text-slate-900 mt-0.5">₹{{ ex.total_rev|floatformat:"0"|default:"0" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="py-5 text-[13px] font-medium text-slate-500 text-center bg-slate-50 rounded-xl">No active exhibition data.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // 1. Revenue Over Time (Live Daily Trends)
+    const revCtx = document.getElementById('revLineChart').getContext('2d');
+    const blueGradient = revCtx.createLinearGradient(0, 0, 0, 300);
+    blueGradient.addColorStop(0, 'rgba(37, 99, 235, 0.15)');
+    blueGradient.addColorStop(0.8, 'rgba(37, 99, 235, 0)');
+
+    const revChart = new Chart(revCtx, {
+        type: 'line',
+        data: {
+            labels: {{ rev_labels|safe }},
+            datasets: [{
+                data: {{ rev_values|safe }},
+                borderColor: '#2563eb',
+                borderWidth: 2.5,
+                backgroundColor: blueGradient,
+                fill: true,
+                tension: 0.45,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#2563eb',
+                pointHoverBorderWidth: 2.5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1000, easing: 'easeOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleFont: { size: 11, family: "'Inter', sans-serif" },
+                    bodyFont: { weight: 'bold', size: 13, family: "'Inter', sans-serif" },
+                    callbacks: { label: (ctx) => ' ₹' + ctx.parsed.y.toLocaleString() }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10, weight: '700' }, color: '#94a3b8' } },
+                y: { 
+                    display: true, 
+                    beginAtZero: true,
+                    grid: { color: 'rgba(226, 232, 240, 0.4)', drawBorder: false },
+                    ticks: { 
+                        font: { size: 10, weight: '700' }, 
+                        color: '#94a3b8',
+                        callback: (value) => '₹' + value.toLocaleString()
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Stall Occupancy (Live Synchronization)
+    const occCtx = document.getElementById('occupancyChart').getContext('2d');
+    const occupancyChart = new Chart(occCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Occupied', 'Reserved', 'Available'],
+            datasets: [{
+                data: [{{ occupied_stalls }}, {{ reserved_stalls }}, {{ available_stalls }}],
+                backgroundColor: ['#2563eb', '#3b82f6cc', '#e2e8f0'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            animation: { duration: 1000 },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 3. Count Animation
+    function animateValue(id, end, isCurrency = false) {
+        const obj = document.getElementById(id);
+        if(!obj) return;
+        const start = parseInt(obj.innerText.replace(/[^0-9]/g, '')) || 0;
+        let startTimestamp = null;
+        const duration = 1500;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const val = Math.floor(progress * (end - start) + start);
+            obj.innerHTML = (isCurrency ? '₹' : '') + val.toLocaleString() + (id === 'occ-badge' ? '%' : '');
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // 4. AJAX Polling Logic
+    async function updateReports() {
+        try {
+            const response = await fetch(window.location.href, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if(!data.stats) return;
+
+            // Update KPI Cards
+            animateValue('rep-rev-stat', data.stats.total_revenue, true);
+            animateValue('rep-user-stat', data.stats.total_users);
+            animateValue('rep-event-stat', data.stats.approved_exhibitions);
+            animateValue('rep-org-stat', data.stats.new_organizers);
+            animateValue('occ-badge', data.stats.occupancy_pct);
+
+            // Update Charts
+            if(data.charts) {
+                revChart.data.labels = data.charts.revenue.labels;
+                revChart.data.datasets[0].data = data.charts.revenue.values;
+                revChart.update();
+
+                occupancyChart.data.datasets[0].data = [
+                    data.stats.occupied_stalls,
+                    data.stats.reserved_stalls,
+                    data.stats.available_stalls
+                ];
+                occupancyChart.update();
+            }
+        } catch (error) {
+            console.error('Reports polling error:', error);
+        }
+    }
+
+    setInterval(updateReports, 30000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contact %}
+<main class="flex-1">
+<!-- Hero Section -->
+<section class="py-8 sm:py-12 lg:py-20 border-b border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-3xl" data-aos="fade-up">
+<h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 sm:mb-4">Contact Us</h1>
+<p class="text-base sm:text-lg text-slate-600 dark:text-slate-400">We're here to help you with your next big event. Reach out to our team of experts for any inquiries about exhibitions, sponsorships, or attendance.</p>
+</div>
+</div>
+</section>
+<!-- Main Content: Form & Info -->
+<section class="py-8 sm:py-12 lg:py-20">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+<!-- Contact Form -->
+<div class="space-y-8">
+<div class="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800" data-aos="fade-right">
+<form action="/contact/" method="POST" class="space-y-5 sm:space-y-6">
+{% csrf_token %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+<div class="space-y-1.5 sm:space-y-2">
+<label class="text-sm font-semibold">First Name</label>
+<input name="fname" class="w-full h-11 sm:h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm sm:text-base" placeholder="Enter first name" type="text" required/>
+</div>
+<div class="space-y-1.5 sm:space-y-2">
+<label class="text-sm font-semibold">Last Name</label>
+<input name="lname" class="w-full h-11 sm:h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm sm:text-base" placeholder="Enter last name" type="text" required/>
+</div>
+</div>
+<div class="space-y-1.5 sm:space-y-2">
+<label class="text-sm font-semibold">Email Address</label>
+<input name="email" class="w-full h-11 sm:h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm sm:text-base" placeholder="email@example.com" type="email" required/>
+</div>
+<div class="space-y-1.5 sm:space-y-2">
+<label class="text-sm font-semibold">Subject</label>
+<input name="subject" class="w-full h-11 sm:h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm sm:text-base" placeholder="How can we help?" type="text" required/>
+</div>
+<div class="space-y-1.5 sm:space-y-2">
+<label class="text-sm font-semibold">Message</label>
+<textarea name="message" class="w-full p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none text-sm sm:text-base" placeholder="Tell us more about your inquiry..." rows="5" required></textarea>
+</div>
+<button type="submit" class="w-full h-11 sm:h-12 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2 mt-2 sm:mt-0">
+                                        Send Message
+                                        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">send</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Contact Sidebar -->
+<div class="space-y-8 sm:space-y-12" data-aos="fade-left">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 sm:gap-8">
+<div class="flex gap-3 sm:gap-4">
+<div class="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px] sm:text-[24px]">location_on</span>
+</div>
+<div>
+<h3 class="text-base sm:text-lg font-bold">Office Address</h3>
+<p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1">123 Exhibition Way, Suite 400<br/>Innovation District, CA 94103</p>
+</div>
+</div>
+<div class="flex gap-3 sm:gap-4">
+<div class="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px] sm:text-[24px]">mail</span>
+</div>
+<div>
+<h3 class="text-base sm:text-lg font-bold">Email Inquiries</h3>
+<p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1">General: hello@exposphere.com<br/>Support: support@exposphere.com</p>
+</div>
+</div>
+<div class="flex gap-3 sm:gap-4">
+<div class="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px] sm:text-[24px]">call</span>
+</div>
+<div>
+<h3 class="text-base sm:text-lg font-bold">Phone</h3>
+<p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1">+1 (555) 123-4567<br/>Mon-Fri, 9am - 6pm PST</p>
+</div>
+</div>
+</div>
+    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[32px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="p-4 sm:px-6 sm:py-5 flex items-center gap-3 border-b border-slate-100">
+            <div class="bg-blue-50 text-blue-600 w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px] sm:text-[24px]">location_on</span>
+            </div>
+            <h2 class="m-0 text-base sm:text-lg font-extrabold text-gray-900">Location Map</h2>
+        </div>
+        <div class="relative h-[200px] sm:h-64 w-full bg-slate-100">
+            <iframe 
+                src="https://maps.google.com/maps?q=123+Exhibition+Way+Innovation+District+CA+94103&t=&z=16&ie=UTF8&iwloc=addr&output=embed" 
+                width="100%" 
+                height="100%" 
+                class="border-0" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQs Section -->
+<section class="py-10 sm:py-16 lg:py-20 bg-slate-50 dark:bg-slate-900/50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-10 sm:mb-16" data-aos="fade-up">
+<h2 class="text-2xl sm:text-3xl font-bold">Frequently Asked Questions</h2>
+<p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2 sm:mt-4">Find quick answers for organizers and visitors.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
+<!-- For Organizers -->
+<div class="space-y-5 sm:space-y-6">
+<h3 class="text-lg sm:text-xl font-bold flex items-center gap-2" data-aos="fade-up">
+<span class="material-symbols-outlined text-primary">event_note</span>
+                                For Organizers
+                            </h3>
+<div class="space-y-3 sm:space-y-4">
+<div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
+<h4 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">How do I list my exhibition?</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Simply create an account, verify your organization, and use our dashboard to submit event details.</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
+<h4 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">What are the promotion options?</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">We offer featured listings, newsletter spotlights, and targeted social media campaigns for increased reach.</p>
+</div>
+</div>
+</div>
+<!-- For Visitors -->
+<div class="space-y-5 sm:space-y-6">
+<h3 class="text-lg sm:text-xl font-bold flex items-center gap-2" data-aos="fade-up">
+<span class="material-symbols-outlined text-primary">person</span>
+                                For Visitors
+                            </h3>
+<div class="space-y-3 sm:space-y-4">
+<div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800" data-aos="fade-up" data-aos-delay="100">
+<h4 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">Are tickets refundable?</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Refund policies vary by event. Please check the specific exhibition page for details or contact the organizer.</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800" data-aos="fade-up" data-aos-delay="200">
+<h4 class="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">How do I get my entry badge?</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Badges are typically sent via email 48 hours before the event. You can also access them in the ExpoSphere mobile app.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+{% endblock %}

@@ -1,0 +1,351 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ===== Admin Enquiries — Clean Style ===== */
+
+    /* Page header */
+    .ae-title {
+        font-size: clamp(22px, 4vw, 30px);
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .dark .ae-title { color: #f8fafc; }
+    .ae-subtitle {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Stats Grid */
+    .ae-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    @media (max-width: 1024px) {
+        .ae-stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+        .ae-stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .ae-stat-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+    }
+    .dark .ae-stat-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+    .ae-stat-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .ae-stat-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #94a3b8;
+    }
+    .ae-stat-value {
+        font-size: 32px;
+        font-weight: 950;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin-top: 4px;
+    }
+    .dark .ae-stat-value { color: #f1f5f9; }
+
+    /* Filter Bar */
+    .ae-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f1f5f9;
+        padding: 6px;
+        border-radius: 14px;
+        width: fit-content;
+    }
+    .dark .ae-filter-bar { background: #1e293b; }
+    .ae-filter-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+        font-weight: 800;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        color: #64748b;
+    }
+    .ae-filter-btn.active {
+        background: #ffffff;
+        color: #6366f1;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+    }
+    .dark .ae-filter-btn.active {
+        background: #0f172a;
+        color: #818cf8;
+    }
+
+    /* Content Area */
+    .ae-content-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 24px;
+        padding: 10px;
+        box-shadow: 0 1px 10px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+    .dark .ae-content-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Table Styles */
+    .ae-table { width: 100%; border-collapse: collapse; }
+    .ae-table th {
+        padding: 18px 20px;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        text-align: left;
+    }
+
+    /* Modal Tweaks */
+    .ae-modal-backdrop {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+    }
+    .ae-modal-content {
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .dark .ae-modal-content {
+        background: #111827;
+        border-color: #1e293b;
+    }
+
+</style>
+
+<div class="w-full max-w-full overflow-x-hidden p-4 md:p-6 lg:p-8">
+
+    <!-- ====== PAGE HEADER ====== -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6" data-aos="fade-up">
+        <div>
+            <h1 class="ae-title">Global enquiries Management</h1>
+            <p class="ae-subtitle">Monitor and resolve every communication touchpoint from across the ecosystem.</p>
+        </div>
+        
+        <!-- Quick Filters -->
+        <div class="ae-filter-bar">
+            <button class="ae-filter-btn active" data-filter="all" onclick="updateFilter('all', this)">All</button>
+            <button class="ae-filter-btn" data-filter="pending" onclick="updateFilter('pending', this)">Pending</button>
+            <button class="ae-filter-btn" data-filter="replied" onclick="updateFilter('replied', this)">Replied</button>
+        </div>
+    </div>
+
+    <!-- ====== STATS GRID ====== -->
+    <div class="ae-stats-grid mb-8">
+        <!-- Total -->
+        <div class="ae-stat-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="ae-stat-icon" style="background:#f0fdfa;">
+                <span class="material-symbols-outlined" style="color:#0d9488; font-size: 26px;">mail</span>
+            </div>
+            <div>
+                <p class="ae-stat-label">Total Volume</p>
+                <h3 class="ae-stat-value" id="stat-total">{{ stats.total }}</h3>
+            </div>
+        </div>
+        <!-- Pending -->
+        <div class="ae-stat-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="ae-stat-icon" style="background:#fffbeb;">
+                <span class="material-symbols-outlined" style="color:#d97706; font-size: 26px;">pending_actions</span>
+            </div>
+            <div>
+                <p class="ae-stat-label">Pending Action</p>
+                <h3 class="ae-stat-value text-amber-600" id="stat-pending">{{ stats.pending }}</h3>
+            </div>
+        </div>
+        <!-- Replied -->
+        <div class="ae-stat-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="ae-stat-icon" style="background:#f0f9ff;">
+                <span class="material-symbols-outlined" style="color:#0284c7; font-size: 26px;">mark_email_read</span>
+            </div>
+            <div>
+                <p class="ae-stat-label">Resolved Units</p>
+                <h3 class="ae-stat-value text-blue-600" id="stat-replied">{{ stats.replied }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== CONTENT AREA ====== -->
+    <div class="ae-content-card" data-aos="fade-up">
+        <div id="enquiries-wrapper">
+            {% include 'dashboard/partials/admin_enquiries_rows.html' %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentFilter = 'all';
+
+    function updateFilter(filter, btn) {
+        document.querySelectorAll('.ae-filter-btn').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = filter;
+        fetchEnquiries();
+    }
+
+    async function fetchEnquiries() {
+        const wrapper = document.getElementById('enquiries-wrapper');
+        wrapper.style.opacity = '0.3';
+        
+        try {
+            const res = await fetch(`{% url 'admin_enquiries' %}?filter=${currentFilter}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                wrapper.innerHTML = data.enquiries_html;
+                
+                // Update stats with animation if they changed
+                animateStat('stat-total', data.stats.total);
+                animateStat('stat-pending', data.stats.pending);
+                animateStat('stat-replied', data.stats.replied);
+            }
+        } catch (e) {
+            console.error('Error fetching enquiries', e);
+        } finally {
+            wrapper.style.opacity = '1';
+        }
+    }
+
+    function animateStat(id, val) {
+        const el = document.getElementById(id);
+        if (!el || el.innerText == val) return;
+        el.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+            el.innerText = val;
+            el.style.transform = 'scale(1)';
+        }, 150);
+    }
+
+    function openModal(id, subject, from, message, isReplied, reply) {
+        document.getElementById('modalSubject').innerText = subject;
+        document.getElementById('modalFrom').innerText = from;
+        document.getElementById('modalMessage').innerText = message;
+        
+        const form = document.getElementById('replyForm');
+        const replySection = document.getElementById('replySection');
+        const closeAction = document.getElementById('closeOnlyAction');
+        const existingReply = document.getElementById('existingReply');
+        
+        if (isReplied === 'true') {
+            form.classList.add('hidden');
+            replySection.classList.remove('hidden');
+            existingReply.innerText = reply;
+            closeAction.classList.remove('hidden');
+        } else {
+            form.classList.remove('hidden');
+            replySection.classList.add('hidden');
+            closeAction.classList.add('hidden');
+            document.getElementById('replyText').value = '';
+            form.action = `/dashboard/admin/enquiries/${id}/respond/`;
+        }
+        
+        document.getElementById('enquiryModal').classList.remove('hidden');
+    }
+    
+    function closeModal() {
+        document.getElementById('enquiryModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}
+
+{% block modals %}
+    <!-- Enquiries Details & Reply Modal -->
+    <div id="enquiryModal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 ae-modal-backdrop transition-opacity" onclick="closeModal()"></div>
+            <div class="relative bg-white dark:bg-slate-900 rounded-3xl ae-modal-content max-w-lg w-full p-6 md:p-8 overflow-y-auto max-h-[90vh] transform transition-all">
+                
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white" id="modalSubject">Enquiry Thread</h3>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Submission Identification</p>
+                    </div>
+                    <button type="button" onclick="closeModal()" class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Sender Info -->
+                    <div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Authenticated Source</p>
+                        <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
+                             <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center font-black">@</div>
+                             <p class="text-sm font-black text-slate-900 dark:text-white" id="modalFrom"></p>
+                        </div>
+                    </div>
+
+                    <!-- Message Payload -->
+                    <div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Message Content</p>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-5 text-[13.5px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium border border-slate-100 dark:border-slate-800" id="modalMessage"></div>
+                    </div>
+                    
+                    <!-- Existing Response -->
+                    <div id="replySection" class="hidden">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-emerald-500" style="font-size: 16px;">verified</span>
+                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Administrative Resolution</p>
+                        </div>
+                        <div class="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/50 rounded-2xl p-5 text-[13.5px] text-emerald-700 dark:text-emerald-300 leading-relaxed whitespace-pre-wrap font-bold italic" id="existingReply"></div>
+                    </div>
+                    
+                    <!-- Reply Action Form -->
+                    <form id="replyForm" method="POST" action="" class="hidden">
+                        {% csrf_token %}
+                        <div class="mb-6">
+                             <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-indigo-500" style="font-size: 16px;">reply</span>
+                                <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Construct Response</p>
+                            </div>
+                            <textarea name="reply" id="replyText" rows="5" class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-[13.5px] font-black focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-400 dark:text-white" placeholder="Draft your final response here..." required></textarea>
+                            <div class="flex items-center gap-2 mt-2 px-1">
+                                <span class="material-symbols-outlined text-slate-400" style="font-size: 14px;">info</span>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">The user will receive an automated transmission.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-[11px]">Abort</button>
+                            <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 dark:shadow-none uppercase tracking-widest text-[11px]">Transmit Response</button>
+                        </div>
+                    </form>
+                    
+                    <!-- Simple Close Action -->
+                    <div id="closeOnlyAction" class="hidden">
+                        <button type="button" onclick="closeModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-[11px]">Audit Complete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

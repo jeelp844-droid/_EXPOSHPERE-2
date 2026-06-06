@@ -1,0 +1,96 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="mb-6 md:mb-8">
+    <h2 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">Stall Management</h2>
+    <p class="text-slate-500 text-sm mt-1">Live floor plan configuration and availability tracking for your exhibitions.</p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
+    {% for ex in exhibitions %}
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600">
+        <!-- Banner -->
+        <div class="h-36 md:h-40 relative overflow-hidden">
+            {% if ex.image %}
+                <img src="{{ ex.image.url }}" alt="{{ ex.title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+            {% else %}
+                <div class="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-slate-300 text-5xl">image</span>
+                </div>
+            {% endif %}
+            <!-- Badges -->
+            <div class="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+                <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md bg-white/90
+                    {% if ex.status == 'approved' %}text-green-600{% else %}text-orange-500{% endif %}">
+                    {{ ex.status }}
+                </span>
+                <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest backdrop-blur-md
+                    {% if ex.dynamic_status == 'Complete' %}bg-red-50/90 text-red-600
+                    {% elif ex.dynamic_status == 'Ongoing' %}bg-blue-50/90 text-blue-600
+                    {% else %}bg-slate-50/90 text-slate-600{% endif %}">
+                    {{ ex.dynamic_status }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="p-4 md:p-5 flex flex-col flex-1">
+            <h3 class="text-base font-black text-slate-900 dark:text-white mb-3 leading-tight">{{ ex.title }}</h3>
+
+            {% if ex.total_stalls == 0 %}
+            <div class="flex-1 flex flex-col items-center justify-center py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 mb-4 text-center">
+                <span class="material-symbols-outlined text-slate-300 text-3xl mb-2">storefront</span>
+                <p class="text-xs font-bold text-slate-500">0 Stalls Required</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">No stall management for this exhibition.</p>
+            </div>
+            <button disabled class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-400 text-sm font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">grid_view</span>
+                No Stalls Configured
+            </button>
+
+            {% else %}
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="text-center p-2 md:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <span class="block text-base md:text-lg font-black text-blue-600">{{ ex.available_count }}</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Available</span>
+                </div>
+                <div class="text-center p-2 md:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <span class="block text-base md:text-lg font-black text-slate-500">{{ ex.booked_count }}</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Booked</span>
+                </div>
+                <div class="text-center p-2 md:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <span class="block text-base md:text-lg font-black text-red-500">{{ ex.maint_count }}</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Blocked</span>
+                </div>
+            </div>
+
+            {% if ex.dynamic_status == 'Complete' %}
+            <a href="{% url 'manage_stalls' ex.id %}" class="w-full py-3 bg-slate-500 hover:bg-slate-600 text-white text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-lg">visibility</span>
+                View Floor Plan
+            </a>
+            {% else %}
+            <a href="{% url 'manage_stalls' ex.id %}" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-indigo-200 dark:hover:shadow-indigo-900/30">
+                <span class="material-symbols-outlined text-lg">grid_view</span>
+                Manage Floor Plan
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full py-16 md:py-20 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+        <span class="material-symbols-outlined text-5xl md:text-6xl text-slate-300 mb-4 block">event_busy</span>
+        <h4 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white">No Exhibitions Found</h4>
+        <p class="text-slate-500 mt-2 text-sm">You need to create an exhibition before managing stalls.</p>
+        <a href="{% url 'add_exhibition' %}" class="mt-6 inline-flex items-center gap-2 text-primary font-bold hover:underline text-sm">
+            Create Exhibition <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

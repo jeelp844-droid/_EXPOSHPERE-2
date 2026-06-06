@@ -1,0 +1,387 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contact %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    body { font-family: 'Outfit', sans-serif; }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(191, 219, 254, 0.5);
+    }
+
+    .equipment-item input[type="checkbox"] { display: none; }
+
+    .submit-btn:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-2px);
+    }
+
+    @keyframes loader-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .loader-spinner { animation: loader-spin 1s linear infinite; }
+
+    @keyframes pulse-anim {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    .loading-text { animation: pulse-anim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* ─── Mobile responsive ─── */
+    @media (max-width: 640px) {
+        .page-wrapper { padding: 12px 12px 100px; }
+
+        .section-card { border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+
+        .fields-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+
+        .equip-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+        .equip-label { font-size: 12px !important; }
+        .equip-price { font-size: 11px !important; }
+
+        /* Hide sidebar, show sticky footer instead */
+        .summary-sidebar { display: none !important; }
+        .sticky-pay-bar { display: flex !important; }
+
+        .main-layout { display: block !important; }
+    }
+
+    @media (min-width: 641px) {
+        .sticky-pay-bar { display: none !important; }
+    }
+
+    /* Sticky bottom pay bar (mobile only) */
+    .sticky-pay-bar {
+        display: none;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: #ffffff;
+        border-top: 1px solid #e5e7eb;
+        padding: 12px 16px 16px;
+        z-index: 9999;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+    }
+    .sticky-pay-bar .pay-total { display: flex; flex-direction: column; }
+    .sticky-pay-bar .pay-total-label { font-size: 11px; color: #6b7280; }
+    .sticky-pay-bar .pay-total-amount { font-size: 20px; font-weight: 800; color: #2563eb; }
+    .sticky-pay-bar .pay-btn {
+        flex-shrink: 0;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Outfit', sans-serif;
+        transition: background 0.2s;
+    }
+    .sticky-pay-bar .pay-btn:hover { background: #1d4ed8; }
+</style>
+
+<div class="bg-gray-100 min-h-screen" style="font-family: 'Outfit', sans-serif;">
+
+    <!-- Processing Loader Overlay -->
+    <div id="booking-loader" class="hidden fixed inset-0 bg-white/70 backdrop-blur-md z-[10000] flex-col items-center justify-center text-center">
+        <div class="loader-spinner w-20 h-20 border-[6px] border-gray-100 border-t-blue-600 rounded-full mb-6 shadow-sm"></div>
+        <h2 class="loading-text text-2xl font-extrabold text-gray-900 mb-2">Processing Your Booking...</h2>
+        <p class="text-base text-slate-500 font-medium">Securely finalizing your stall reservation. Please do not close this window.</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-10 page-wrapper">
+
+        <form method="POST" id="detailsForm">
+            {% csrf_token %}
+
+            <!-- Two-column on desktop, stacked on mobile -->
+            <div class="main-layout grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+
+                <!-- LEFT COLUMN -->
+                <div>
+
+                    <!-- Section 1: Company Information -->
+                    <div class="section-card bg-white rounded-2xl p-8 shadow-md mb-8">
+                        <div class="mb-6">
+                            <a href="{% url 'book_stall' exhibition.id %}" class="inline-flex items-center gap-2 text-blue-600 no-underline font-extrabold text-sm tracking-wide">
+                                <i class="fas fa-arrow-left"></i> BACK TO STALL
+                            </a>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-lg font-semibold mb-6">
+                            <i class="fas fa-building text-blue-600"></i>
+                            Company Information
+                        </div>
+
+                        <div class="fields-grid grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div class="mb-4 sm:mb-5">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                                <input type="text" name="company_name" class="form-input w-full px-4 py-3 border border-gray-200 rounded-lg text-sm transition-colors" placeholder="e.g. TechNova Solutions" required>
+                            </div>
+                            <div class="mb-4 sm:mb-5">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Stall Representative Name</label>
+                                <input type="text" name="representative_name" class="form-input w-full px-4 py-3 border border-gray-200 rounded-lg text-sm transition-colors" placeholder="John Doe" required>
+                            </div>
+                            <div class="mb-4 sm:mb-5">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+                                <input type="text" name="contact_number" class="form-input w-full px-4 py-3 border border-gray-200 rounded-lg text-sm transition-colors" placeholder="+1 (555) 000-0000" required>
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description of Exhibition</label>
+                            <textarea name="stall_description" class="form-textarea w-full px-4 py-3 border border-gray-200 rounded-lg text-sm transition-colors" rows="4" placeholder="Briefly describe what your company will be showcasing..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Additional Equipment -->
+                    <div class="section-card bg-white rounded-2xl p-8 shadow-md mb-8">
+                        <div class="flex items-center gap-3 text-lg font-semibold mb-6">
+                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                            Additional Equipment
+                        </div>
+
+                        <div class="equip-grid grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_extra_chairs" value="true" class="equip-check" data-price="15">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">Extra Chairs</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹15/unit</span>
+                                </div>
+                            </label>
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_spotlight" value="true" class="equip-check" data-price="45">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">Spotlight</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹45/unit</span>
+                                </div>
+                            </label>
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_power_strip" value="true" class="equip-check" data-price="10">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">Power Strip</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹10/unit</span>
+                                </div>
+                            </label>
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_tv_display" value="true" class="equip-check" data-price="120">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">TV Display (42")</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹120/unit</span>
+                                </div>
+                            </label>
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_brochure_stand" value="true" class="equip-check" data-price="25">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">Brochure Stand</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹25/unit</span>
+                                </div>
+                            </label>
+
+                            <label class="equipment-item flex items-start gap-3 border border-gray-200 rounded-xl p-3 sm:p-4 cursor-pointer transition-all hover:border-blue-600 hover:bg-slate-50">
+                                <input type="checkbox" name="has_wifi" value="true" class="equip-check" data-price="50">
+                                <div>
+                                    <h4 class="equip-label text-sm font-semibold m-0 mb-1">WiFi (High Speed)</h4>
+                                    <span class="equip-price text-xs text-blue-600 font-medium">₹50/day</span>
+                                </div>
+                            </label>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN: Summary Sidebar (hidden on mobile) -->
+                <div class="summary-sidebar">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md sticky top-28">
+
+                        <div class="bg-blue-600 text-white px-5 py-4 flex items-center gap-3 font-semibold">
+                            <i class="fas fa-receipt"></i>
+                            Booking Summary
+                        </div>
+
+                        <div class="p-6">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-semibold text-base">Stall {{ stall.stall_number }}</span>
+                                <span class="font-bold text-blue-600 text-base">₹{{ stall.price }}</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-4">{{ stall.get_stall_type_display }} {{ stall.position }}</div>
+
+                            <div class="h-px bg-gray-200 my-4"></div>
+
+                            <div id="addons-list">
+                                <div class="text-xs font-semibold text-gray-400 mb-3 tracking-wide">ADD-ONS (EST.)</div>
+                            </div>
+
+                            <div class="flex justify-between text-sm mb-2">
+                                <span>Service Fee</span>
+                                <span class="font-semibold">₹12.50</span>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-xl p-4 mt-4">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-semibold text-lg">Total Amount</span>
+                                    <span id="total-price-display" class="font-extrabold text-xl text-blue-600">₹{{ stall.price|add:12.50 }}</span>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-2">Total amount includes all applicable taxes and mandatory facility fees.</p>
+                            </div>
+
+                            <div class="bg-blue-50 rounded-xl p-3 mt-5 flex gap-3 text-xs text-blue-800">
+                                <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+                                <span>Pricing and equipment availability are subject to final approval by venue management.</span>
+                            </div>
+
+                            <button type="button"
+                                class="submit-btn w-full mt-5 bg-blue-600 text-white py-3.5 px-7 rounded-xl font-semibold flex items-center justify-center gap-2.5 cursor-pointer shadow-[0_4px_6px_-1px_rgba(37,99,235,0.2)] transition-all"
+                                id="pay-button">
+                                Confirm & Book Stall
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+
+    <!-- ─── Mobile Sticky Pay Bar ─── -->
+    <div class="sticky-pay-bar" id="mobile-pay-bar">
+        <div class="pay-total">
+            <span class="pay-total-label">Total payable</span>
+            <span id="mobile-total-display" class="pay-total-amount">₹{{ stall.price|add:12.50 }}</span>
+        </div>
+        <button type="button" class="pay-btn" id="mobile-pay-button">
+            Confirm & Pay <i class="fas fa-check-circle"></i>
+        </button>
+    </div>
+
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    const basePrice = parseFloat("{{ stall.price|default:0 }}");
+    const serviceFee = basePrice > 0 ? 12.50 : 0;
+    const addonsList = document.getElementById('addons-list');
+    const totalPriceDisplay = document.getElementById('total-price-display');
+    const mobileTotalDisplay = document.getElementById('mobile-total-display');
+    const checks = document.querySelectorAll('.equip-check');
+
+    function updateSummary() {
+        let addonTotal = 0;
+        let addonsHtml = `<div class="text-xs font-semibold text-gray-400 mb-3 tracking-wide">ADD-ONS (EST.)</div>`;
+
+        checks.forEach(check => {
+            if (check.checked) {
+                const name = check.closest('.equipment-item').querySelector('h4').innerText;
+                const price = parseFloat(check.dataset.price);
+                addonTotal += price;
+                addonsHtml += `
+                    <div class="flex justify-between text-sm mb-2">
+                        <span>${name} x1</span>
+                        <span class="font-semibold">₹${price.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+        });
+
+        addonsList.innerHTML = addonsHtml;
+        const finalTotal = basePrice + addonTotal + serviceFee;
+        totalPriceDisplay.innerText = `₹${finalTotal.toFixed(2)}`;
+        mobileTotalDisplay.innerText = `₹${finalTotal.toFixed(2)}`;
+    }
+
+    checks.forEach(check => {
+        check.addEventListener('change', (e) => {
+            const item = e.target.closest('.equipment-item');
+            if (e.target.checked) {
+                item.classList.add('border-blue-600', 'bg-blue-50');
+                item.classList.remove('border-gray-200');
+            } else {
+                item.classList.remove('border-blue-600', 'bg-blue-50');
+                item.classList.add('border-gray-200');
+            }
+            updateSummary();
+        });
+    });
+
+    updateSummary();
+
+    // Shared Razorpay handler — called by both desktop and mobile buttons
+    function triggerPayment() {
+        const paymentForm = document.getElementById('detailsForm');
+
+        let addonTotal = 0;
+        checks.forEach(check => {
+            if (check.checked) addonTotal += parseFloat(check.dataset.price);
+        });
+        const finalTotal = basePrice + addonTotal + serviceFee;
+        const totalAmount = Math.round(finalTotal * 100);
+
+        if (totalAmount === 0) {
+            const loader = document.getElementById('booking-loader');
+            loader.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            paymentForm.submit();
+            return;
+        }
+
+        const options = {
+            key: "rzp_test_bilBagOBVTi4lE",
+            amount: totalAmount,
+            currency: "INR",
+            name: "ExpoSphere",
+            description: `Stall Booking for {{ exhibition.title }}`,
+            handler: function (response) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'razorpay_payment_id';
+                input.value = response.razorpay_payment_id;
+                paymentForm.appendChild(input);
+
+                const loader = document.getElementById('booking-loader');
+                loader.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                paymentForm.submit();
+            },
+            prefill: {
+                name: "{{ request.user.first_name }} {{ request.user.last_name }}",
+                email: "{{ request.user.email }}",
+                contact: ""
+            },
+            theme: { color: "#2563eb" }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const payButton = document.getElementById('pay-button');
+        const mobilePayButton = document.getElementById('mobile-pay-button');
+
+        if (payButton) payButton.addEventListener('click', function(e) { e.preventDefault(); triggerPayment(); });
+        if (mobilePayButton) mobilePayButton.addEventListener('click', function(e) { e.preventDefault(); triggerPayment(); });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,323 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ===== My Enquiries (Sent) — Premium Style ===== */
+    .me-title {
+        font-size: clamp(22px, 4vw, 30px);
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+    .dark .me-title { color: #f8fafc; }
+    .me-subtitle {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Stats */
+    .me-stat-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+        width: fit-content;
+        min-width: 240px;
+    }
+    .dark .me-stat-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Content Area */
+    .me-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 1px 10px rgba(0,0,0,0.02);
+    }
+    .dark .me-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Table Styles */
+    .me-table { width: 100%; border-collapse: collapse; }
+    .me-table th {
+        padding: 18px 20px;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        text-align: left;
+        background: #fcfdfe;
+    }
+    .dark .me-table th { background: #1e293b/50; }
+    .me-row td {
+        padding: 20px;
+        border-top: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+    .dark .me-row td { border-top-color: #1e293b; }
+
+    /* Badges */
+    .me-badge-replied {
+        background: #f0fdf4;
+        color: #16a34a;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 1px solid #dcfce7;
+    }
+    .me-badge-pending {
+        background: #fffbeb;
+        color: #d97706;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 1px solid #fef3c7;
+    }
+</style>
+
+<div class="w-full max-w-full overflow-x-hidden p-4 md:p-6 lg:p-8">
+
+    <!-- ====== PAGE HEADER ====== -->
+    <div class="mb-8" data-aos="fade-up">
+        <h1 class="me-title">My Outbound enquiries</h1>
+        <p class="me-subtitle">Track and manage responses to the questions you've sent to exhibition organizers.</p>
+    </div>
+
+    <!-- ====== STATS OVERVIEW ====== -->
+    <div class="mb-8" data-aos="fade-up" data-aos-delay="100">
+        <div class="me-stat-card">
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">send</span>
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sent</p>
+                <p class="text-2xl font-black text-slate-900 dark:text-white">{{ enquiries.count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== CONTENT AREA ====== -->
+    <div class="me-card" data-aos="fade-up">
+        
+        <!-- Desktop Table (lg+) -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="me-table">
+                <thead>
+                    <tr>
+                        <th>Exhibition Target</th>
+                        <th>Subject Thread</th>
+                        <th>Message Snippet</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: right;">Date Logged</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50 dark:divide-slate-800/10">
+                    {% for enquiry in enquiries %}
+                    <tr class="me-row hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
+                        <!-- Exhibition -->
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-7 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
+                                    {% if enquiry.exhibition.image %}
+                                        <img src="{{ enquiry.exhibition.image.url }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-slate-300 text-sm">image</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-black text-slate-900 dark:text-white text-[13px] truncate max-w-[180px]">{{ enquiry.exhibition.title }}</p>
+                                    <p class="text-[11px] font-bold text-slate-400 mt-0.5">{{ enquiry.exhibition.category }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- Subject -->
+                        <td>
+                            <p class="font-black text-slate-800 dark:text-slate-200 text-[13px] line-clamp-1 max-w-[160px]">{{ enquiry.subject }}</p>
+                        </td>
+                        <!-- Message Snippet -->
+                        <td>
+                            <div class="max-w-[240px]">
+                                <p class="text-[12px] text-slate-500 font-medium truncate mb-2">{{ enquiry.message }}</p>
+                                <button onclick="openModal('{{ enquiry.subject|escapejs }}', '{{ enquiry.exhibition.title|escapejs }}', '{{ enquiry.message|escapejs }}', '{% if enquiry.is_replied %}true{% else %}false{% endif %}', '{{ enquiry.reply|escapejs }}')" 
+                                        class="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                    Full Thread
+                                </button>
+                            </div>
+                        </td>
+                        <!-- Status -->
+                        <td class="text-center">
+                            {% if enquiry.is_replied %}
+                                <span class="me-badge-replied">Replied</span>
+                            {% else %}
+                                <span class="me-badge-pending">Pending</span>
+                            {% endif %}
+                        </td>
+                        <!-- Date -->
+                        <td class="text-right whitespace-nowrap">
+                            <span class="text-[13px] font-black text-slate-800 dark:text-slate-200">{{ enquiry.created_at|date:"M d, Y" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center gap-4">
+                                <div class="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-4xl text-slate-200 dark:text-slate-700">outgoing_mail</span>
+                                </div>
+                                <div>
+                                    <p class="font-black text-slate-900 dark:text-white text-lg">No Outbound Enquiries</p>
+                                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">You haven't initiated any communication yet.</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Stack (<lg) -->
+        <div class="lg:hidden divide-y divide-slate-100 dark:divide-slate-800/50">
+            {% for enquiry in enquiries %}
+            <div class="p-5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
+                <!-- Card Header -->
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                         <div class="w-10 h-7 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 flex-shrink-0 bg-white dark:bg-slate-900">
+                            {% if enquiry.exhibition.image %}
+                                <img src="{{ enquiry.exhibition.image.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-slate-200 text-xs">image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ enquiry.exhibition.title }}</p>
+                            <p class="text-[10px] font-bold text-slate-400">{{ enquiry.exhibition.category }}</p>
+                        </div>
+                    </div>
+                     {% if enquiry.is_replied %}
+                        <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 font-black text-[9px] rounded-lg border border-emerald-100 uppercase">Replied</span>
+                    {% else %}
+                        <span class="px-2 py-0.5 bg-amber-50 text-amber-600 font-black text-[9px] rounded-lg border border-amber-100 uppercase">Pending</span>
+                    {% endif %}
+                </div>
+
+                <!-- Card Body -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-4 border border-slate-100 dark:border-slate-800/50">
+                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1.5">Your Question</p>
+                    <p class="font-black text-slate-800 dark:text-slate-200 text-sm leading-tight mb-2 line-clamp-1">{{ enquiry.subject }}</p>
+                    <p class="text-xs text-slate-500 font-medium italic line-clamp-2 leading-relaxed">{{ enquiry.message }}</p>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="flex items-center justify-between">
+                     <div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Time Log</p>
+                        <p class="text-xs font-black text-slate-800 dark:text-slate-200">{{ enquiry.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <button onclick="openModal('{{ enquiry.subject|escapejs }}', '{{ enquiry.exhibition.title|escapejs }}', '{{ enquiry.message|escapejs }}', '{% if enquiry.is_replied %}true{% else %}false{% endif %}', '{{ enquiry.reply|escapejs }}')" 
+                            class="h-9 px-4 bg-indigo-50 text-indigo-600 font-black text-[10px] uppercase tracking-widest rounded-xl flex items-center gap-2 transition-all">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">input</span>
+                        Thread
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block modals %}
+    <!-- Enquiry Modal -->
+    <div id="enquiryModal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+            <div class="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 md:p-8 overflow-y-auto max-h-[90vh] transform transition-all">
+                
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white" id="modalSubject">Enquiry Thread</h3>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1" id="modalExhibition"></p>
+                    </div>
+                    <button type="button" onclick="closeModal()" class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Message Sent -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                             <span class="material-symbols-outlined text-indigo-400" style="font-size: 14px;">outbox</span>
+                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Message Transmission</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-5 text-[13.5px] text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium border border-slate-100 dark:border-slate-800" id="modalMessage"></div>
+                    </div>
+                    
+                    <!-- Organizer's Reply -->
+                    <div id="replySection" class="hidden animate-in fade-in duration-300">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-emerald-500" style="font-size: 16px;">official_updates</span>
+                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Organizer's Resolution</p>
+                        </div>
+                        <div class="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/50 rounded-2xl p-5 text-[13.5px] text-emerald-700 dark:text-emerald-300 leading-relaxed whitespace-pre-wrap font-bold italic" id="modalReply"></div>
+                    </div>
+
+                    <button type="button" onclick="closeModal()" class="w-full py-4 mt-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black rounded-2xl hover:bg-slate-200 transition-all uppercase tracking-widest text-[11px]">Audit Complete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openModal(subject, exhibition, message, isReplied, reply) {
+        document.getElementById('modalSubject').innerText = subject;
+        document.getElementById('modalExhibition').innerText = exhibition;
+        document.getElementById('modalMessage').innerText = message;
+        
+        const replySection = document.getElementById('replySection');
+        if (isReplied === 'true') {
+            replySection.classList.remove('hidden');
+            document.getElementById('modalReply').innerText = reply;
+        } else {
+            replySection.classList.add('hidden');
+        }
+        
+        document.getElementById('enquiryModal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('enquiryModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

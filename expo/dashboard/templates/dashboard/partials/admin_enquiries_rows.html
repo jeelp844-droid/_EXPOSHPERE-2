@@ -1,0 +1,138 @@
+<!-- ====== DESKTOP TABLE (lg and above) ====== -->
+<div class="hidden lg:block overflow-x-auto">
+    <table class="ae-table">
+        <thead>
+            <tr>
+                <th>Contact Person</th>
+                <th>Subject & Audit</th>
+                <th>Message Preview</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: right;">Date Received</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/10">
+            {% for enquiry in enquiries %}
+            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
+                <!-- Contact Person -->
+                <td class="px-5 py-6">
+                    <div class="flex items-center gap-3">
+                        <div class="h-11 w-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center font-black text-sm border border-indigo-100 dark:border-indigo-800/50 uppercase">
+                            {{ enquiry.fname|slice:":1" }}{{ enquiry.lname|slice:":1" }}
+                        </div>
+                        <div>
+                            <p class="font-black text-slate-900 dark:text-white text-[13px] leading-tight">{{ enquiry.fname }} {{ enquiry.lname }}</p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-0.5">{{ enquiry.email }}</p>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Subject & Audit -->
+                <td class="px-5 py-6">
+                    <div class="flex flex-col">
+                        <span class="font-black text-slate-800 dark:text-slate-200 text-[13px] line-clamp-1 max-w-[180px]">{{ enquiry.subject }}</span>
+                        <span class="text-[10px] font-black text-indigo-400 uppercase tracking-tighter mt-0.5">Ref: #ENQ{{ enquiry.id|stringformat:"04d" }}</span>
+                    </div>
+                </td>
+
+                <!-- Message Preview -->
+                <td class="px-5 py-6">
+                    <div class="max-w-[280px]">
+                        <p class="text-[12px] text-slate-500 dark:text-slate-400 font-medium line-clamp-1">{{ enquiry.message }}</p>
+                        <button onclick="openModal('{{ enquiry.id }}', '{{ enquiry.subject|escapejs }}', '{{ enquiry.fname|escapejs }} {{ enquiry.lname|escapejs }} - {{ enquiry.email|escapejs }}', '{{ enquiry.message|escapejs }}', '{% if enquiry.is_replied %}true{% else %}false{% endif %}', '{{ enquiry.reply|escapejs }}')" 
+                                class="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 mt-2 flex items-center gap-1 transition-all">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">input</span>
+                            {% if enquiry.is_replied %}View Response{% else %}Send Reply{% endif %}
+                        </button>
+                    </div>
+                </td>
+
+                <!-- Status -->
+                <td class="px-5 py-6 text-center">
+                    {% if enquiry.is_replied %}
+                        <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-black text-[10px] rounded-lg uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/50">Resolved</span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-black text-[10px] rounded-lg uppercase tracking-widest border border-amber-100 dark:border-amber-800/50">Pending</span>
+                    {% endif %}
+                </td>
+
+                <!-- Date Received -->
+                <td class="px-5 py-6 text-right">
+                    <div class="flex flex-col items-end">
+                        <span class="text-[13px] font-black text-slate-800 dark:text-slate-200">{{ enquiry.created_at|date:"M d, Y" }}</span>
+                        <span class="text-[10px] font-bold text-slate-400 mt-0.5 capitalize">{{ enquiry.created_at|date:"H:i A" }}</span>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-20 text-center">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-4xl text-slate-200 dark:text-slate-700">inbox</span>
+                        </div>
+                        <div>
+                            <p class="font-black text-slate-900 dark:text-white text-lg">Communication Silence</p>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">No active enquiries match your filter</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ====== MOBILE CARD LIST (below lg) ====== -->
+<div class="lg:hidden space-y-4 p-1">
+    {% for enquiry in enquiries %}
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden" data-aos="fade-up">
+        
+        <!-- Header -->
+        <div class="p-4 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                 <div class="h-9 w-9 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center font-black text-xs">
+                    {{ enquiry.fname|slice:":1" }}{{ enquiry.lname|slice:":1" }}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ enquiry.fname }} {{ enquiry.lname }}</p>
+                    <p class="text-[10px] font-bold text-slate-400">Ref: ENQ{{ enquiry.id }}</p>
+                </div>
+            </div>
+            {% if enquiry.is_replied %}
+                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 font-black text-[9px] rounded-lg uppercase tracking-tight border border-emerald-100">RESOLVED</span>
+            {% else %}
+                <span class="px-2.5 py-1 bg-amber-50 text-amber-600 font-black text-[9px] rounded-lg uppercase tracking-tight border border-amber-100">PENDING</span>
+            {% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="p-5">
+            <div class="mb-4">
+                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1.5">Communication Subject</p>
+                <p class="font-black text-slate-800 dark:text-slate-200 text-sm leading-tight line-clamp-1">{{ enquiry.subject }}</p>
+            </div>
+            
+            <div class="bg-slate-50/80 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 mb-4">
+                <p class="text-[12px] text-slate-600 dark:text-slate-300 font-medium line-clamp-2 leading-relaxed italic">{{ enquiry.message }}</p>
+            </div>
+
+            <!-- Footer Meta -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Transmission Date</p>
+                    <p class="text-xs font-black text-slate-800 dark:text-slate-200">{{ enquiry.created_at|date:"M d, Y" }}</p>
+                </div>
+                <button onclick="openModal('{{ enquiry.id }}', '{{ enquiry.subject|escapejs }}', '{{ enquiry.fname|escapejs }} {{ enquiry.lname|escapejs }} - {{ enquiry.email|escapejs }}', '{{ enquiry.message|escapejs }}', '{% if enquiry.is_replied %}true{% else %}false{% endif %}', '{{ enquiry.reply|escapejs }}')" 
+                        class="h-10 px-5 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-100 dark:shadow-none transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">input</span>
+                    Audit
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="py-16 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+        <p class="text-sm font-black text-slate-400 uppercase tracking-widest">No Communications Pending</p>
+    </div>
+    {% endfor %}
+</div>

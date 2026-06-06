@@ -1,0 +1,250 @@
+<!-- ====== DESKTOP TABLE (lg and above) ====== -->
+<div class="hidden lg:block overflow-x-auto">
+    <table class="as-table">
+        <thead>
+            <tr>
+                <th>Type & Details</th>
+                <th>Booker Details</th>
+                <th>Exhibition & Organizer</th>
+                <th style="text-align: center;">Amount</th>
+                <th style="text-align: center;">Payment</th>
+                <th style="text-align: center;">Date</th>
+                <th style="text-align: right;">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/10">
+            {% for booking in bookings %}
+            <tr class="as-row group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
+                <!-- Type & Details -->
+                <td>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="as-badge-stall self-start">Stall</span>
+                        <span class="text-[11px] font-black text-slate-800 dark:text-slate-200">ID: #{{ booking.stall_instance.stall_number }}</span>
+                    </div>
+                </td>
+                <!-- Booker Details -->
+                <td>
+                    <p class="font-black text-slate-900 dark:text-white text-[13px]">
+                        {% with reg=booking.user.register_set.first %}
+                            {% if reg %}{{ reg.full_name }}{% else %}{{ booking.user.username }}{% endif %}
+                        {% endwith %}
+                    </p>
+                    <p class="text-slate-400 text-[11px] mt-0.5">{{ booking.user.email }}</p>
+                </td>
+                <!-- Exhibition & Organizer -->
+                <td>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-7 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
+                            {% if booking.exhibition.image %}
+                                <img src="{{ booking.exhibition.image.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-slate-300 text-sm">image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-slate-900 dark:text-white font-black text-[13px] truncate max-w-[180px]">{{ booking.exhibition.title }}</p>
+                            <p class="text-indigo-500 text-[10px] font-black uppercase mt-0.5">Org: {{ booking.exhibition.user.username }}</p>
+                        </div>
+                    </div>
+                </td>
+                <!-- Amount -->
+                <td class="text-center">
+                    <span class="font-black text-slate-900 dark:text-white text-[14px]">₹{{ booking.total_price|floatformat:"2" }}</span>
+                </td>
+                <!-- Payment Status -->
+                <td class="text-center">
+                    <span class="as-status-completed inline-block
+                        {% if booking.payment_status == 'paid' or booking.payment_status == 'completed' %}bg-emerald-50 text-emerald-600 border-emerald-100
+                        {% elif booking.payment_status == 'pending' %}bg-amber-50 text-amber-600 border-amber-100
+                        {% else %}bg-rose-50 text-rose-600 border-rose-100{% endif %}">
+                        {{ booking.payment_status|upper }}
+                    </span>
+                </td>
+                <!-- Date -->
+                <td class="text-center">
+                    <span class="text-slate-700 dark:text-slate-300 font-bold text-[12px]">{{ booking.created_at|date:"M d, Y" }}</span>
+                </td>
+                <!-- Action -->
+                <td class="text-right">
+                    <button onclick="toggleDetails('{{ booking.id }}')" id="btn-desktop-{{ booking.id }}"
+                            class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center ml-auto">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">visibility</span>
+                    </button>
+                </td>
+            </tr>
+
+            <!-- Desktop Expandable Details -->
+            <tr id="details-desktop-{{ booking.id }}" class="hidden" style="opacity:0; transition: opacity 0.3s ease;">
+                <td colspan="7" class="px-6 pb-6 pt-0">
+                   <div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-6">
+                        <div class="grid grid-cols-3 gap-8">
+                            <!-- Company Info -->
+                            <div>
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Vendor Information</h4>
+                                <p class="text-base font-black text-slate-900 dark:text-white">{{ booking.company_name|default:"Independent Contractor" }}</p>
+                                <div class="grid grid-cols-2 gap-3 mt-3">
+                                    <div>
+                                        <h4 class="text-[8px] font-black text-slate-300 uppercase mb-1">Rep. Name</h4>
+                                        <p class="text-sm font-bold text-slate-600 dark:text-slate-400">{{ booking.representative_name|default:booking.user.get_full_name }}</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[8px] font-black text-slate-300 uppercase mb-1">Contact</h4>
+                                        <p class="text-sm font-bold text-slate-600 dark:text-slate-400">{{ booking.contact_number|default:"N/A" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Stall Stats -->
+                            <div class="border-x border-slate-200 dark:border-slate-800 px-8">
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Unit Specs</h4>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 flex flex-col items-center justify-center flex-shrink-0">
+                                        <span class="text-[8px] font-black opacity-40 uppercase">No.</span>
+                                        <p class="text-lg font-black text-indigo-500">#{{ booking.stall_instance.stall_number }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-900 dark:text-white">{{ booking.stall_instance.stall_type|upper }}</p>
+                                        <p class="text-xs text-slate-400">{{ booking.stall_instance.dimensions|default:"3.0m x 3.0m" }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg">
+                                    <span class="text-[9px] font-black text-indigo-400 uppercase tracking-tight">System Allocation Confirmed</span>
+                                </div>
+                            </div>
+                            <!-- Utilities -->
+                            <div>
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Utility Support</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-black uppercase {% if booking.has_wifi %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-sm">wifi</span> WiFi
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-black uppercase {% if booking.has_extra_chairs %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-sm">chair</span> Chairs
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-black uppercase {% if booking.has_spotlight %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-sm">lightbulb</span> Light
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-black uppercase {% if booking.has_tv_display %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-sm">tv</span> Display
+                                    </div>
+                                    <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[9px] font-black uppercase {% if booking.has_power_strip %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-50{% endif %}">
+                                        <span class="material-symbols-outlined text-sm">power</span> Power
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                   </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ====== MOBILE CARD LIST (below lg) ====== -->
+<div class="lg:hidden space-y-4">
+    {% for booking in bookings %}
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden" data-aos="fade-up">
+
+        <!-- Card Header -->
+        <div class="p-4 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
+            <div class="flex items-center gap-2">
+                <span class="as-badge-stall">Stall</span>
+                <span class="text-xs font-black text-slate-900 dark:text-white">ID: #{{ booking.stall_instance.stall_number }}</span>
+            </div>
+            <span class="as-status-completed text-[9px]
+                {% if booking.payment_status == 'paid' or booking.payment_status == 'completed' %}bg-emerald-50 text-emerald-600
+                {% elif booking.payment_status == 'pending' %}bg-amber-50 text-amber-600
+                {% else %}bg-rose-50 text-rose-600{% endif %}">
+                {{ booking.payment_status|upper }}
+            </span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="p-4">
+            <!-- Row: Booker -->
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-500 text-sm">
+                    {{ booking.user.username|slice:":1"|upper }}
+                </div>
+                <div>
+                   <p class="font-black text-slate-900 dark:text-white text-sm">
+                        {% with reg=booking.user.register_set.first %}
+                            {% if reg %}{{ reg.full_name }}{% else %}{{ booking.user.username }}{% endif %}
+                        {% endwith %}
+                    </p>
+                    <p class="text-slate-400 text-[10px]">{{ booking.user.email }}</p>
+                </div>
+            </div>
+
+            <!-- Box: Exhibition -->
+            <div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    {% if booking.exhibition.image %}
+                        <img src="{{ booking.exhibition.image.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-slate-200 text-sm">image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-black text-slate-900 dark:text-white truncate">{{ booking.exhibition.title }}</p>
+                    <p class="text-[10px] font-black text-indigo-500">Org: {{ booking.exhibition.user.username }}</p>
+                </div>
+            </div>
+
+            <!-- Footer: Amount & Action -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount Paid</p>
+                    <p class="text-base font-black text-slate-900 dark:text-white">₹{{ booking.total_price|floatformat:"0" }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p class="text-[10px] font-bold text-slate-400 mr-2">{{ booking.created_at|date:"M d" }}</p>
+                    <button onclick="toggleDetails('{{ booking.id }}')" id="btn-mobile-{{ booking.id }}"
+                            class="h-9 px-4 rounded-xl bg-indigo-50 text-indigo-500 border border-indigo-100 flex items-center gap-2 font-black text-[10px] uppercase transition-all">
+                        <span class="material-symbols-outlined text-sm">visibility</span> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- Expandable Details (Mobile) -->
+            <div id="details-mobile-{{ booking.id }}" class="hidden mt-4 pt-4 border-t border-dashed border-slate-200 dark:border-slate-800 space-y-4" style="opacity:0; transition: opacity 0.3s ease;">
+                 <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-xl col-span-2">
+                        <p class="text-[8px] font-black text-indigo-400 uppercase mb-1">Professional Entity</p>
+                        <p class="text-xs font-black text-slate-800 dark:text-slate-100">{{ booking.company_name|default:"Individual Contractor" }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">
+                        <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Rep. Name</p>
+                        <p class="text-[10px] font-bold text-slate-600 dark:text-slate-400">{{ booking.representative_name|default:booking.user.username }}</p>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">
+                        <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Dimensions</p>
+                        <p class="text-[10px] font-bold text-slate-600 dark:text-slate-400">{{ booking.stall_instance.dimensions|default:"3x3m" }}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border {% if booking.has_wifi %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                        <span class="material-symbols-outlined text-base">wifi</span>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border {% if booking.has_extra_chairs %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                        <span class="material-symbols-outlined text-base">chair</span>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border {% if booking.has_spotlight %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                        <span class="material-symbols-outlined text-base">lightbulb</span>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border {% if booking.has_tv_display %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                        <span class="material-symbols-outlined text-base">tv</span>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center border {% if booking.has_power_strip %}bg-emerald-50 text-emerald-600 border-emerald-200{% else %}bg-slate-50 text-slate-300 border-slate-100 opacity-60{% endif %}">
+                        <span class="material-symbols-outlined text-base">power</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

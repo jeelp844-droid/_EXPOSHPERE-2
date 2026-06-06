@@ -1,0 +1,164 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 md:mb-8">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">My Bookings</h1>
+        <p class="text-slate-500 text-sm mt-1">Track all your ticket and stall reservations</p>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-5 md:p-8">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+            <div class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                Total Booked
+            </div>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 text-xl">bar_chart</span>
+        </div>
+        <div class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{{ bookings.count }}</div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-5 md:p-8">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+            <div class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                Stalls
+            </div>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 text-xl">storefront</span>
+        </div>
+        <div class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{{ stall_bookings_count|default:"0" }}</div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm p-5 md:p-8">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+            <div class="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                <div class="w-2 h-2 rounded-full bg-cyan-500"></div>
+                Tickets
+            </div>
+            <span class="material-symbols-outlined text-slate-200 dark:text-slate-700 text-xl">confirmation_number</span>
+        </div>
+        <div class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">{{ ticket_bookings_count|default:"0" }}</div>
+    </div>
+</div>
+
+<!-- Bookings Table Container -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+
+    <!-- Desktop Table (md+) -->
+    <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-800">
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest" style="width:35%">Exhibition</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Type</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Qty</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Amount</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Payment</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">Date</th>
+                    <th class="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+                {% for booking in bookings %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                                {% if booking.exhibition.image %}
+                                    <img src="{{ booking.exhibition.image.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-slate-300 text-sm">image</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-slate-900 dark:text-white truncate">{{ booking.exhibition.title }}</p>
+                                <p class="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase mt-0.5">#BK{{ booking.id|stringformat:"05d" }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase {% if booking.booking_type == 'ticket' %}bg-blue-50 text-blue-600{% else %}bg-purple-50 text-purple-600{% endif %}">
+                            {{ booking.booking_type }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm font-black text-slate-900 dark:text-white">{{ booking.stalls }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm font-black text-slate-900 dark:text-white">₹{{ booking.total_price }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase {% if booking.payment_status == 'completed' %}bg-green-50 text-green-600{% else %}bg-orange-50 text-orange-600{% endif %}">
+                            {% if booking.payment_status == 'completed' %}Completed{% else %}Pending{% endif %}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <p class="text-xs font-black text-slate-600 dark:text-slate-400">{{ booking.created_at|date:"M d, Y" }}</p>
+                        <p class="text-[10px] font-bold text-slate-300 uppercase mt-0.5">{{ booking.created_at|time:"H:i" }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{% url 'download_pass' booking.id %}" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                            <span class="material-symbols-outlined text-[18px]">download</span>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-16 text-center text-slate-300 dark:text-slate-600 italic font-bold">No bookings available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Card List (< md) -->
+    <div class="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {% for booking in bookings %}
+        <div class="p-4">
+            <!-- Row 1: Exhibition + Download -->
+            <div class="flex items-start gap-3 mb-3">
+                <div class="w-12 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+                    {% if booking.exhibition.image %}
+                        <img src="{{ booking.exhibition.image.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-slate-300 text-xs">image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-black text-slate-900 dark:text-white leading-tight">{{ booking.exhibition.title }}</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-0.5">#BK{{ booking.id|stringformat:"05d" }}</p>
+                </div>
+                <a href="{% url 'download_pass' booking.id %}" class="flex-shrink-0 w-9 h-9 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                </a>
+            </div>
+            <!-- Row 2: Badges + Amount/Date -->
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {% if booking.booking_type == 'ticket' %}bg-blue-50 text-blue-600{% else %}bg-purple-50 text-purple-600{% endif %}">
+                    {{ booking.booking_type }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase {% if booking.payment_status == 'completed' %}bg-green-50 text-green-600{% else %}bg-orange-50 text-orange-600{% endif %}">
+                    {% if booking.payment_status == 'completed' %}Paid{% else %}Pending{% endif %}
+                </span>
+                <span class="text-[11px] font-black text-slate-900 dark:text-white ml-auto">₹{{ booking.total_price }}</span>
+                <span class="text-[10px] text-slate-400 font-bold">{{ booking.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="px-4 py-12 text-center text-slate-300 dark:text-slate-600 italic font-bold text-sm">No bookings available.</div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

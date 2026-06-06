@@ -1,0 +1,717 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ExpoSphere</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0b50da",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #0b50da;
+        }
+        html, body { font-family: 'Inter', sans-serif; overflow-x: hidden; max-width: 100%; }
+        * { box-sizing: border-box; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-item.active { 
+            background-color: var(--primary); 
+            color: white !important;
+            box-shadow: 0 4px 12px -2px rgba(11, 80, 218, 0.3);
+        }
+        .sidebar-item.active .material-symbols-outlined {
+            color: white !important;
+        }
+        .sidebar-item:not(.active):hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+        .dark .sidebar-item.active { 
+            background-color: #3b82f6; 
+            color: white !important;
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.5);
+        }
+        .dark .sidebar-item:not(.active):hover {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        /* --- Mobile Sidebar --- */
+        #sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        @media (min-width: 1024px) {
+            #sidebar {
+                transform: translateX(0) !important;
+            }
+            #sidebar-overlay {
+                display: none !important;
+            }
+        }
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 40;
+        }
+        #sidebar-overlay.open {
+            display: block;
+        }
+
+        /* --- Student Verification Premium Styles --- */
+        .badge-student {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px solid #ffedd5;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        .dark .badge-student {
+            background: rgba(234, 88, 12, 0.1);
+            border-color: rgba(234, 88, 12, 0.2);
+        }
+
+        .btn-proof {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .btn-proof:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        .btn-proof span { font-size: 14px; }
+
+        /* Glassmorphism Modal */
+        #proof-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #proof-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .proof-modal-content {
+            background: white;
+            padding: 12px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #proof-modal-overlay.active .proof-modal-content {
+            transform: scale(1);
+        }
+        .dark .proof-modal-content {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .proof-frame {
+            width: 100%;
+            height: 70vh;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark .proof-frame { background: #0f172a; }
+        .proof-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .proof-frame iframe { width: 100%; height: 100%; border: none; }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-display">
+
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="flex min-h-screen bg-slate-50 dark:bg-slate-950 overflow-x-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 overflow-y-auto" data-aos="fade-right" data-aos-duration="300">
+        <a href="/" class="p-6 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <div class="text-primary">
+                <span class="material-symbols-outlined text-4xl">language</span>
+            </div>
+            <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">ExpoSphere</h1>
+        </a>
+
+        <nav class="mt-4 px-4 space-y-1">
+            {% with register=request.user.register_set.first %}
+            
+            <p class="px-4 mt-4 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Menu</p>
+            <!-- Dashboard Link (Common) -->
+            <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% elif register.role == 'Organizer' %}{% url 'organizer_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" 
+               class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all 
+               {% if request.path == '/dashboard/admin_dashboard/' or request.path == '/dashboard/user_dashboard/' or request.path == '/dashboard/organizer_dashboard/' or request.path == '/dashboard/' %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                <span class="material-symbols-outlined text-xl">dashboard</span>
+                Dashboard
+            </a>
+
+            <!-- Role-Based Navigation -->
+            {% if request.user.is_superuser %}
+                <!-- Admin Module -->
+                <p class="px-4 mt-8 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Module</p>
+                <a href="{% url 'list_organizers' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'organizer' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">group_add</span>
+                    Organizer Requests
+                </a>
+                <a href="{% url 'approve_requests' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'approve_requests' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">verified_user</span>
+                    Exhibition Requests
+                </a>
+                <a href="{% url 'list_exhibition' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if '/list/' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">event</span>
+                    Manage Exhibitions
+                </a>
+                <a href="{% url 'manage_users' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'users' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">group</span>
+                    User Management
+                </a>
+                <a href="{% url 'manage_categories' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'categories' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">category</span>
+                    Manage Categories
+                </a>
+
+                <a href="{% url 'manage_locations' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'locations' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">map</span>
+                    Manage Locations
+                </a>
+                <a href="{% url 'admin_reports' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'reports' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">assessment</span>
+                    Reports
+                </a>
+                <a href="{% url 'admin_bookings' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'admin/bookings' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">all_inbox</span>
+                    All Bookings
+                </a>
+                <a href="{% url 'admin_stalls' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'admin/stalls' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">storefront</span>
+                    Stall Allocations
+                </a>
+                <a href="{% url 'admin_enquiries' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'admin/enquiries' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">contact_support</span>
+                    Platform Enquiries
+                </a>
+
+            {% elif register.role == 'Organizer' %}
+                <!-- Organizer Module -->
+                <p class="px-4 mt-8 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organizer Module</p>
+                <a href="{% url 'add_exhibition' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'add_exhibition' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">add_circle</span>
+                    Create Exhibition
+                </a>
+                <a href="{% url 'list_exhibition' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if '/list/' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">event_available</span>
+                    My Exhibitions
+                </a>
+                <a href="{% url 'stall_management_list' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'stall-management' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">grid_view</span>
+                    Stall Management
+                </a>
+                
+                <a href="{% url 'my_exhibition_book' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'my-exhibition-book' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">book_online</span>
+                    My Exhibition Book
+                </a>
+                <a href="{% url 'my_bookings' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'my-bookings' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">local_activity</span>
+                    My Bookings
+                </a>
+                <a href="{% url 'my_enquiries' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'my-enquiries' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">mail</span>
+                    Exhibition Enquiries
+                </a>
+                <a href="{% url 'user_enquiries' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if request.path == '/dashboard/enquiries/' %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">question_answer</span>
+                    Enquiries
+                </a>
+
+            {% elif register.role == 'Visitor' %}
+                <!-- Visitor Module -->
+                <p class="px-4 mt-8 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Visitor Module</p>
+                <a href="{% url 'my_bookings' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if 'my-bookings' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">local_activity</span>
+                    My Bookings
+                </a>
+                <a href="{% url 'exhibition' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all {% if '/exhibition/' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">explore</span>
+                    Browse Exhibitions
+                </a>
+
+                 <a href="{% url 'request_organizer_upgrade' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all {% if '/request_upgrade/' in request.path %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                    <span class="material-symbols-outlined text-xl">explore</span>
+                    Request Organizer
+                </a>
+
+                
+            {% endif %}
+
+            <p class="px-4 mt-8 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account</p>
+            <a href="{% url 'profile_settings' %}" class="sidebar-item group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all {% if request.path == '/dashboard/profile/' %}active text-white{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-50{% endif %}">
+                <span class="material-symbols-outlined text-xl">person</span>
+                Profile
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-item flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl text-red-500 hover:bg-red-50 transition-all">
+                <span class="material-symbols-outlined text-xl">logout</span>
+                Logout
+            </a>
+            
+            {% endwith %}
+        </nav>
+
+        <div class="absolute bottom-0 w-full p-4 border-t border-slate-100 dark:border-slate-800">
+            <!-- Removed Help Center as per request -->
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 lg:ml-64 min-h-screen relative">
+        <!-- Top Navigation Bar -->
+        <header class="sticky top-0 z-40 flex items-center justify-between px-4 md:px-8 h-16 md:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800" data-aos="fade-down" data-aos-duration="300" data-aos-delay="100">
+            <!-- Hamburger (mobile only) -->
+            <button id="sidebar-toggle" class="lg:hidden mr-3 flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0" onclick="openSidebar()" aria-label="Open sidebar">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <div class="flex-1 max-w-xl">
+                <div class="relative group">
+                    <span class="absolute inset-y-0 left-4 flex items-center text-slate-400 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl">search</span>
+                    </span>
+                    <input type="text" 
+                           placeholder="Search for events..." 
+                           class="w-full h-10 md:h-11 pl-12 pr-4 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Notification Bell & Dropdown -->
+                <div class="relative" id="notification-container">
+                    <button id="notification-bell" class="relative text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+                        <span class="material-symbols-outlined text-2xl">notifications</span>
+                        <span id="notification-badge" class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center hidden">
+                            0
+                        </span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="notification-dropdown" class="absolute right-[-40px] sm:right-0 mt-4 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 hidden z-50 transform origin-top-right transition-all duration-200 scale-95 opacity-0">
+                        <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm text-primary">notifications</span>
+                                <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Notifications</h3>
+                            </div>
+                            <button id="mark-all-read" class="text-[10px] font-bold text-primary hover:text-primary/80 uppercase tracking-widest transition-colors">Mark all read</button>
+                        </div>
+                        <div id="notification-list" class="max-h-[60vh] sm:max-h-96 overflow-y-auto custom-scrollbar">
+                            <!-- Notifications injected here via JS -->
+                            <div class="p-10 text-center flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-slate-300">notifications_off</span>
+                                </div>
+                                <p class="text-xs text-slate-400 italic">No new notifications</p>
+                            </div>
+                        </div>
+                        <div class="p-3 border-t border-slate-100 dark:border-slate-800 text-center rounded-b-2xl">
+                            <a href="{% url 'list_notifications' %}" class="inline-flex items-center justify-center gap-2 w-full py-2 text-[11px] font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">
+                                View all activity
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-800"></div>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-900 dark:text-white leading-none">{{ request.user.first_name|default:request.user.username }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            {% if request.user.is_superuser %}Admin{% else %}{{ request.user.register_set.first.role|default:"User" }}{% endif %}
+                        </p>
+                    </div>
+                   <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden border border-primary/20">
+                    {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="User Avatar" class="w-full h-full object-cover">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ request.user.first_name|default:request.user.username }}&background=0b50da&color=fff" alt="User Avatar">
+                    {% endif %}
+                   </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="p-4 md:p-6 lg:p-8 overflow-x-hidden min-w-0 max-w-full" data-aos="fade-up" data-aos-duration="300" data-aos-delay="200">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+</div>
+
+{% block modals %}{% endblock %}
+
+    <!-- Django Global Messages Toast Container -->
+    {% if messages %}
+    <div id="django-toast-container" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto z-[9999] flex flex-col gap-3 pointer-events-none">
+        {% for message in messages %}
+        <div class="django-toast pointer-events-auto flex items-center w-full sm:w-80 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border-l-4 {% if message.tags == 'success' %}border-green-500{% elif message.tags == 'error' %}border-red-500{% elif message.tags == 'warning' %}border-yellow-500{% else %}border-primary{% endif %} p-4 transform translate-y-10 opacity-0 transition-all duration-300" role="alert">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl {% if message.tags == 'success' %}text-green-600 bg-green-50{% elif message.tags == 'error' %}text-red-600 bg-red-50{% elif message.tags == 'warning' %}text-yellow-600 bg-yellow-50{% else %}text-white bg-primary{% endif %}">
+                <span class="material-symbols-outlined text-xl">
+                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+                </span>
+            </div>
+            <div class="ms-3 text-sm font-bold text-slate-900 dark:text-white break-words flex-1 pr-2">{{ message }}</div>
+            <button type="button" class="ms-auto text-slate-400 hover:text-slate-600 transition-colors" onclick="this.closest('.django-toast').remove();" aria-label="Close">
+                <span class="material-symbols-outlined text-base">close</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toasts = document.querySelectorAll('.django-toast');
+            toasts.forEach((toast, index) => {
+                setTimeout(() => {
+                    requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
+                    setTimeout(() => {
+                        toast.classList.add('translate-y-10', 'opacity-0');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 5000);
+                }, index * 200);
+            });
+        });
+    </script>
+    {% endif %}
+
+    <!-- Custom JS Toast Notifications Container -->
+    <div id="toast-container" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 left-4 sm:left-auto z-[100] flex flex-col gap-3 pointer-events-none">
+        <!-- Toasts injected here -->
+    </div>
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bell = document.getElementById('notification-bell');
+            const dropdown = document.getElementById('notification-dropdown');
+            const badge = document.getElementById('notification-badge');
+            const list = document.getElementById('notification-list');
+            const markAllBtn = document.getElementById('mark-all-read');
+            const toastContainer = document.getElementById('toast-container');
+
+            let lastNotificationId = null;
+            let isFirstLoad = true;
+
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        dropdown.classList.remove('scale-95', 'opacity-0');
+                        dropdown.classList.add('scale-100', 'opacity-100');
+                    });
+                } else {
+                    dropdown.classList.remove('scale-100', 'opacity-100');
+                    dropdown.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => dropdown.classList.add('hidden'), 200);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('scale-100', 'opacity-100');
+                    dropdown.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => dropdown.classList.add('hidden'), 200);
+                }
+            });
+
+            function getNotifConfig(type) {
+                switch(type) {
+                    case 'admin': return { icon: 'admin_panel_settings', color: 'bg-red-50 text-red-600', border: 'border-red-500' };
+                    case 'organizer': return { icon: 'business_center', color: 'bg-blue-50 text-blue-600', border: 'border-blue-500' };
+                    case 'visitor': return { icon: 'person', color: 'bg-green-50 text-green-600', border: 'border-green-500' };
+                    default: return { icon: 'notifications', color: 'bg-slate-50 text-slate-600', border: 'border-slate-500' };
+                }
+            }
+
+            function showToast(notif) {
+                const config = getNotifConfig(notif.type);
+                const toast = document.createElement('div');
+                toast.className = `w-full sm:w-80 bg-white dark:bg-slate-800 shadow-2xl rounded-2xl border-l-4 ${config.border} p-4 pointer-events-auto transform translate-y-10 opacity-0 transition-all duration-300`;
+                toast.innerHTML = `
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 rounded-xl ${config.color} flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-xl">${config.icon}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${notif.title}</p>
+                                <button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                                    <span class="material-symbols-outlined text-base">close</span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-500 line-clamp-2 mt-0.5">${notif.message}</p>
+                            <a href="${notif.link || '#'}" class="text-[10px] font-bold text-primary mt-2 inline-block hover:underline" 
+                               onclick="markAsRead(${notif.id}, '${notif.link || ''}')">View Details</a>
+                        </div>
+                    </div>
+                `;
+                toastContainer.appendChild(toast);
+                
+                // Animate in
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-y-10', 'opacity-0');
+                });
+
+                // Auto remove
+                setTimeout(() => {
+                    toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 6000);
+            }
+
+            window.markAsRead = async function(id) {
+                window.location.href = `/dashboard/notifications/read/${id}/`;
+            };
+
+            const fetchNotifications = async () => {
+                try {
+                    const res = await fetch("{% url 'fetch_notifications' %}");
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        if (data.unread_count > 0) {
+                            badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+
+                        if (data.notifications && data.notifications.length > 0) {
+                            // Check for new notifications
+                            const latestId = data.notifications[0].id;
+                            if (latestId > lastNotificationId && lastNotificationId !== null) {
+                                // Find all new unread notifications
+                                data.notifications.filter(n => n.id > lastNotificationId && !n.is_read).forEach(showToast);
+                            }
+                            lastNotificationId = latestId;
+
+                            list.innerHTML = data.notifications.map(n => {
+                                const config = getNotifConfig(n.type);
+                                return `
+                                <div class="px-4 py-3 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors ${n.is_read ? 'opacity-60 bg-white dark:bg-slate-800' : 'bg-blue-50/40 dark:bg-blue-900/10'} cursor-pointer" onclick="markAsRead(${n.id}, '${n.link || ''}')">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg ${config.color} flex items-center justify-center shrink-0">
+                                            <span class="material-symbols-outlined text-sm">${config.icon}</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <p class="text-sm font-semibold text-slate-900 dark:text-white line-clamp-1">${n.title}</p>
+                                                ${!n.is_read ? '<div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>' : ''}
+                                            </div>
+                                            <p class="text-xs text-slate-500 line-clamp-2 mt-1">${n.message}</p>
+                                            <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1 font-medium">
+                                                <span class="material-symbols-outlined text-[10px]">schedule</span>
+                                                ${n.created_at}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;}).join('');
+                        } else {
+                            list.innerHTML = `
+                                <div class="p-6 text-center text-sm text-slate-500 flex flex-col items-center gap-2">
+                                    <span class="material-symbols-outlined text-4xl text-slate-300">notifications_off</span>
+                                    No notifications yet
+                                </div>
+                            `;
+                            lastNotificationId = 0;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error fetching notifications:', e);
+                }
+            };
+
+            markAllBtn.addEventListener('click', async () => {
+                try {
+                    const res = await fetch("{% url 'mark_all_notifications_read' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    if (res.ok) {
+                        fetchNotifications();
+                        dropdown.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.error('Error marking all as read:', e);
+                }
+            });
+
+            // Initial fetch
+            fetchNotifications();
+            
+            // Poll every 10 seconds for a "live" feel
+            setInterval(fetchNotifications, 10000);
+        });
+
+        // --- Student ID Proof Logic ---
+        function viewStudentID(url) {
+            const overlay = document.getElementById('proof-modal-overlay');
+            const frame = document.getElementById('proof-frame');
+            const isPdf = url.toLowerCase().endsWith('.pdf');
+            
+            frame.innerHTML = isPdf 
+                ? `<iframe src="${url}"></iframe>` 
+                : `<img src="${url}" alt="Student ID Proof">`;
+            
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProofModal() {
+            const overlay = document.getElementById('proof-modal-overlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => { document.getElementById('proof-frame').innerHTML = ''; }, 300);
+        }
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeProofModal();
+        });
+
+        // --- Mobile Sidebar ---
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        // Close sidebar on nav link click (mobile)
+        document.querySelectorAll('#sidebar .sidebar-item').forEach(el => {
+            el.addEventListener('click', () => {
+                if (window.innerWidth < 1024) closeSidebar();
+            });
+        });
+    </script>
+
+    <!-- Student ID Proof Modal -->
+    <div id="proof-modal-overlay" onclick="if(event.target === this) closeProofModal()">
+        <div class="proof-modal-content">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Student ID Verification</h3>
+                    <p class="text-xs text-slate-500 font-medium">Verify the authenticity of the uploaded document</p>
+                </div>
+                <button onclick="closeProofModal()" class="w-10 h-10 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center text-slate-400">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div id="proof-frame" class="proof-frame">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="mt-4 flex justify-end gap-3 px-2">
+                <button onclick="closeProofModal()" class="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AOS JS Initialization -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            AOS.init({
+                once: true, // whether animation should happen only once - while scrolling down
+                offset: 20, // offset (in px) from the original trigger point
+                duration: 300, // values from 0 to 3000, with step 50ms
+                easing: 'ease-out-cubic', // default easing for AOS animations
+            });
+        });
+    </script>
+</body>
+</html>

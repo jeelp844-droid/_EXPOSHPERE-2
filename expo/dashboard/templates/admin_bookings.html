@@ -1,0 +1,424 @@
+{% extends 'base_dashboard.html' %}
+
+{% block content %}
+<style>
+    /* ===== Admin Bookings — Clean Style ===== */
+
+    /* Page header */
+    .abp-title {
+        font-size: clamp(22px, 4vw, 30px);
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .dark .abp-title { color: #f8fafc; }
+    .abp-subtitle {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 400;
+    }
+
+    /* Single unified stats card */
+    .abp-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+    @media (max-width: 1024px) {
+        .abp-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+        .abp-stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .abp-stat-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+    }
+    .dark .abp-stat-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+    .abp-stat-icon {
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .abp-stat-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #94a3b8;
+    }
+    .abp-stat-value {
+        font-size: 28px;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-top: 4px;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .dark .abp-stat-value { color: #f1f5f9; }
+
+    /* Filter bar card */
+    .abp-filter-card {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 24px;
+        flex-wrap: wrap;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+    }
+    .dark .abp-filter-card {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Left: exhibition selector group */
+    .abp-ex-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 250px;
+    }
+    .abp-ex-pill {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+    }
+    .dark .abp-ex-pill {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .abp-ex-pill select {
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 12px 40px 12px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        cursor: pointer;
+        appearance: none;
+        width: 100%;
+    }
+    .dark .abp-ex-pill select { color: #f1f5f9; }
+    .abp-ex-pill:focus-within {
+        border-color: #6366f1;
+        background: #fff;
+    }
+    .dark .abp-ex-pill:focus-within { background: #0f172a; }
+
+    /* Right: type pill group */
+    .abp-type-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 14px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    @media (min-width: 640px) {
+        .abp-type-group { width: auto; flex-wrap: nowrap; }
+    }
+    .dark .abp-type-group { background: #1e293b; }
+    .abp-type-btn {
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 11.5px;
+        font-weight: 800;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.18s ease;
+        flex: 1;
+        text-align: center;
+    }
+    .abp-type-btn.is-active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+    }
+    .dark .abp-type-btn.is-active {
+        background: #0f172a;
+        color: #f1f5f9;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Content wrapper */
+    .abp-content-wrap {
+        background: #ffffff;
+        border: 1px solid #e8ecf0;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 1px 10px rgba(0,0,0,0.02);
+    }
+    .dark .abp-content-wrap {
+        background: #0f172a;
+        border-color: #1e293b;
+    }
+
+    /* Desktop table */
+    .abp-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    .abp-table thead th {
+        padding: 18px 20px;
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+    }
+    .dark .abp-table thead th {
+        background: #1e293b;
+        border-bottom-color: #334155;
+    }
+    .abp-table tbody tr td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+    .dark .abp-table tbody tr td { border-bottom-color: #1e293b; }
+
+    /* Loading state */
+    #bookings-wrapper { transition: opacity 0.25s ease; }
+</style>
+
+<div class="w-full max-w-full overflow-x-hidden p-4 md:p-6 lg:p-8">
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="mb-8" data-aos="fade-up">
+        <h1 class="abp-title">Global Bookings Administration</h1>
+        <p class="abp-subtitle">A master list of all bookings placed across every exhibition in the ecosystem.</p>
+    </div>
+
+    <!-- ===== STATS GRID ===== -->
+    <div class="abp-stats-grid mb-6" role="region" aria-label="Booking statistics">
+
+        <!-- Total Exhibitions -->
+        <div class="abp-stat-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="abp-stat-icon" style="background:#eff6ff;">
+                <span class="material-symbols-outlined" style="font-size:24px;color:#3b82f6;" aria-hidden="true">event</span>
+            </div>
+            <div>
+                <p class="abp-stat-label">Total Exhibitions</p>
+                <h3 class="abp-stat-value" id="stat-exhibitions">{{ stats.total_exhibitions }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Bookings -->
+        <div class="abp-stat-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="abp-stat-icon" style="background:#fff1f2;">
+                <span class="material-symbols-outlined" style="font-size:24px;color:#f43f5e;" aria-hidden="true">assignment_turned_in</span>
+            </div>
+            <div>
+                <p class="abp-stat-label">Total Bookings</p>
+                <h3 class="abp-stat-value" id="stat-bookings">{{ stats.total_bookings }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Stalls -->
+        <div class="abp-stat-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="abp-stat-icon" style="background:#f0fdf4;">
+                <span class="material-symbols-outlined" style="font-size:24px;color:#22c55e;" aria-hidden="true">storefront</span>
+            </div>
+            <div>
+                <p class="abp-stat-label">Total Stalls</p>
+                <h3 class="abp-stat-value" id="stat-stalls">{{ stats.total_stalls }}</h3>
+            </div>
+        </div>
+
+        <!-- Total Tickets -->
+        <div class="abp-stat-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="abp-stat-icon" style="background:#fff7ed;">
+                <span class="material-symbols-outlined" style="font-size:24px;color:#f97316;" aria-hidden="true">confirmation_number</span>
+            </div>
+            <div>
+                <p class="abp-stat-label">Total Tickets</p>
+                <h3 class="abp-stat-value" id="stat-tickets">{{ stats.total_tickets }}</h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== FILTER BAR ===== -->
+    <div class="abp-filter-card mb-6" data-aos="fade-up">
+
+        <!-- Left: Exhibition selector -->
+        <div class="abp-ex-group">
+            <span class="material-symbols-outlined hidden sm:block" style="font-size:20px;color:#cbd5e1;flex-shrink:0;" aria-hidden="true">filter_alt</span>
+            <div class="abp-ex-pill">
+                <select id="exhibition-select"
+                        onchange="updateExhibition(this.value)"
+                        aria-label="Filter by exhibition">
+                    <option value="all">Total Overview (All Exhibitions)</option>
+                    {% for ex in all_exhibitions %}
+                    <option value="{{ ex.id }}"
+                        {% if current_exhibition_id == ex.id|stringformat:"i" %}selected{% endif %}>
+                        {{ ex.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <span class="material-symbols-outlined" style="font-size:18px;color:#94a3b8;pointer-events:none;position:absolute;right:16px;" aria-hidden="true">expand_more</span>
+            </div>
+        </div>
+
+        <!-- Right: Type filter pills -->
+        <div class="abp-type-group" role="group" aria-label="Filter by booking type">
+            <button id="tab-all"
+                    onclick="updateTypeFilter('all', this)"
+                    class="abp-type-btn filter-tab {% if current_type == 'all' or not current_type %}is-active{% endif %}"
+                    data-type="all"
+                    aria-pressed="{% if current_type == 'all' or not current_type %}true{% else %}false{% endif %}">
+                All
+            </button>
+            <button id="tab-stall"
+                    onclick="updateTypeFilter('stall', this)"
+                    class="abp-type-btn filter-tab {% if current_type == 'stall' %}is-active{% endif %}"
+                    data-type="stall"
+                    aria-pressed="{% if current_type == 'stall' %}true{% else %}false{% endif %}">
+                Stalls
+            </button>
+            <button id="tab-ticket"
+                    onclick="updateTypeFilter('ticket', this)"
+                    class="abp-type-btn filter-tab {% if current_type == 'ticket' %}is-active{% endif %}"
+                    data-type="ticket"
+                    aria-pressed="{% if current_type == 'ticket' %}true{% else %}false{% endif %}">
+                Tickets
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ===== BOOKINGS CONTENT ===== -->
+    <div class="mb-10" data-aos="fade-up">
+        <div id="bookings-wrapper">
+            {% include 'dashboard/partials/admin_bookings_rows.html' %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let currentExId = '{{ current_exhibition_id|default:"all" }}';
+    let currentType = '{{ current_type|default:"all" }}';
+
+    function updateExhibition(exId) {
+        currentExId = exId;
+        refreshDashboard();
+    }
+
+    function updateTypeFilter(type, el) {
+        // Deactivate all
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.classList.remove('is-active');
+            tab.setAttribute('aria-pressed', 'false');
+        });
+        // Activate selected
+        el.classList.add('is-active');
+        el.setAttribute('aria-pressed', 'true');
+        currentType = type;
+        refreshDashboard();
+    }
+
+    async function refreshDashboard() {
+        const wrapper = document.getElementById('bookings-wrapper');
+        if (wrapper) wrapper.style.opacity = '0.35';
+
+        const params = new URLSearchParams();
+        if (currentExId !== 'all')  params.append('exhibition', currentExId);
+        if (currentType !== 'all')  params.append('type', currentType);
+        const url = "{% url 'admin_bookings' %}?" + params.toString();
+
+        try {
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+
+            if (wrapper) {
+                wrapper.innerHTML = data.bookings_html;
+                if (data.stats) {
+                    animateStat('stat-exhibitions', data.stats.total_exhibitions);
+                    animateStat('stat-bookings',    data.stats.total_bookings);
+                    animateStat('stat-stalls',      data.stats.total_stalls);
+                    animateStat('stat-tickets',     data.stats.total_tickets);
+                }
+                setTimeout(() => { wrapper.style.opacity = '1'; }, 250);
+            } else {
+                location.reload();
+            }
+            window.history.pushState({}, '', url);
+        } catch (err) {
+            console.error('Error:', err);
+            window.location.href = url;
+        }
+    }
+
+    function animateStat(id, value) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.transform = 'scale(1.1)';
+        el.style.color = '#3b82f6';
+        setTimeout(() => {
+            el.innerText = value;
+            el.style.transform = 'scale(1)';
+            el.style.color = '';
+        }, 150);
+    }
+
+    function toggleDetails(id) {
+        const isMobile = window.innerWidth < 1024;
+        const targetId = isMobile ? 'details-mobile-' + id : 'details-desktop-' + id;
+        const btnId    = isMobile ? 'btn-mobile-' + id    : 'icon-desktop-' + id;
+        const row = document.getElementById(targetId);
+        const icon = document.getElementById(btnId);
+        
+        if (!row) return;
+
+        if (row.style.display === 'none' || row.classList.contains('hidden')) {
+            row.style.display = isMobile ? 'block' : 'table-row';
+            row.classList.remove('hidden');
+            setTimeout(() => {
+                row.style.opacity = '1';
+                if (icon) icon.innerText = 'visibility_off';
+            }, 10);
+        } else {
+            row.style.opacity = '0';
+            if (icon) icon.innerText = 'visibility';
+            setTimeout(() => {
+                row.style.display = 'none';
+                row.classList.add('hidden');
+            }, 300);
+        }
+    }
+</script>
+{% endblock %}

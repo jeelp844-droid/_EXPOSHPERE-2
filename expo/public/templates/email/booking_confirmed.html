@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #334155; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+        .header { background-color: #0B50DA; padding: 40px 20px; text-align: center; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.025em; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700; }
+        .details { background-color: #f1f5f9; padding: 20px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #0B50DA; }
+        .details p { margin: 8px 0; font-size: 14px; }
+        .details strong { color: #475569; }
+        .footer { padding: 30px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #f1f5f9; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #0B50DA; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EXPOSPHERE</h1>
+        </div>
+        <div class="content">
+            <h2>Booking Confirmed!</h2>
+            <p>Hi {{ user_name }},</p>
+            <p>Great news! Your booking for <strong>{{ ex_title }}</strong> has been confirmed by the organizer.</p>
+            
+            <div class="details">
+                <p><strong>Booking ID:</strong> #{{ booking.id }}</p>
+                <p><strong>Type:</strong> {{ booking.get_booking_type_display }}</p>
+                <p><strong>Quantity:</strong> {{ booking.stalls }} Pass(es)</p>
+                <p><strong>Total Paid:</strong> ₹{{ booking.total_price }}</p>
+            </div>
+
+            <p>We've attached your digital entry pass to this email. Please keep it handy (either printed or on your phone) for admission to the event.</p>
+            
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 ExpoSphere. All rights reserved.</p>
+            <p>This is an automated message, please do not reply directly to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
